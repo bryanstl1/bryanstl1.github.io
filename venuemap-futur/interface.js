@@ -212,4 +212,5 @@ function initializeInterface() {
   window.visualViewport?.addEventListener('resize', () => { if (document.activeElement === document.getElementById('query')) setBrowsing(true); });
   renderResults();
   window.VenueNavigation?.initialize();
+  window.VenueParkMap?.initialize();
 }

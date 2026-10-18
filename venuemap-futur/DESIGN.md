@@ -64,3 +64,17 @@ La reconstrucción continúa siendo conceptual y no oficial. No es un sistema de
 - La reproducción dura 12 segundos y actualiza solo la capa SVG. Se pausa al cerrar el panel o cambiar de pestaña. Con movimiento reducido, la reproducción automática queda desactivada y se mantienen los controles manuales.
 
 Para habilitar orientación real hacen falta coordenadas verificadas del plano, caminos peatonales y accesos del festival. `navigation-data.js` declara esta versión como `concept-demo` y deja su calibración en `null`.
+
+## Parque real en Google Maps
+
+El selector «Festival 3D / Google Maps» incorpora una segunda vista con el mapa geográfico del Parque Fundidora. Usa el iframe público generado en Google Maps → Compartir → Incorporar un mapa, centrado por Google en 25.6786569, -100.2842344. No se reutilizan sus imágenes para fabricar una base ni se asigna esta coordenada al origen de la maqueta.
+
+La vista real ocupa el ancho disponible y ofrece destinos permanentes: Parque Fundidora, Nave Lewis, Museo del Acero Horno 3 y Cintermex. «Cómo llegar» abre las indicaciones a pie de Google Maps; el origen se omite para que Google gestione la ubicación con su propio permiso. VenueMap no transmite las coordenadas que obtiene su comprobador de GPS. Los enlaces siguen el formato oficial Maps URLs, sin una clave de API.
+
+La inserción solo carga al activar Google Maps, conserva los controles y atribución del proveedor, y ofrece recarga y enlace externo. Sin conexión, explica cómo reintentar y permite regresar al mapa 3D local. En Solo mapa se ocultan las herramientas inferiores y se conservan Volver y el selector de vista.
+
+Al cambiar de fuente se pausa la simulación y se detiene el seguimiento de ubicación. Al regresar se conservan el día y la selección del modelo. En pantallas cortas, el selector cede espacio mientras está abierta una ficha; reaparece al cerrarla. Las funciones originales del festival permanecen en su vista 3D.
+
+La vista de Google representa los caminos y lugares permanentes del parque; no verifica el vallado, los accesos habilitados ni la posición de escenarios o servicios temporales del festival. La calibración del modelo sigue pendiente. La cobertura de imágenes 360 depende de Google y no se promete un Street View del montaje del evento.
+
+Referencias: [Parque Fundidora en Google Maps](https://www.google.com/maps/search/?api=1&query=Parque+Fundidora+Monterrey), [directorio del parque](https://www.parquefundidora.org/mapa/), [documentación de Maps URLs](https://developers.google.com/maps/documentation/urls/get-started).
