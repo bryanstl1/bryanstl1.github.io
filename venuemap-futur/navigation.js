@@ -7,6 +7,7 @@ window.VenueNavigation = (() => {
   const reducedMotion = matchMedia('(prefers-reduced-motion: reduce)');
   let initialized = false, route = null, animation = null, previousFrame = null;
   let watchId = null, watchToken = 0, locating = false;
+  let guidance = null, following = false, lastCameraFrame = 0, guideSignature = "";
   let gpsMessage = 'Activa la ubicación para comprobar la señal de tu teléfono.';
   const distance = (a,b) => Math.hypot(a[0]-b[0],a[1]-b[1]);
   const cross = (a,b) => a[0]*b[1]-a[1]*b[0];
@@ -71,13 +72,15 @@ window.VenueNavigation = (() => {
   function pause() {
     if(animation!==null)cancelAnimationFrame(animation);
     animation=null;previousFrame=null;
-    if(initialized){byId('nav-play').textContent='Reproducir';byId('nav-play').setAttribute('aria-pressed','false');}
+    if(initialized){
+      for(const id of ['nav-play','guide-play']){byId(id).textContent='Reproducir';byId(id).setAttribute('aria-pressed','false');}
+    }
   }
   function stopRoute() {
-    pause();route=null;
+    stopGuidance();pause();route=null;
     if(!initialized)return;
     byId('app').classList.remove('has-route');byId('route-overlay').setAttribute('hidden','');
-    byId('route-badge').hidden=true;byId('route-progress-section').hidden=true;
+    byId('route-dock').hidden=true;byId('route-badge').hidden=true;byId('route-progress-section').hidden=true;
     byId('nav-route-status').textContent='Elige dos zonas distintas para ver un recorrido de prueba.';
   }
   function showView(view) {
@@ -112,8 +115,8 @@ window.VenueNavigation = (() => {
     }
     const result=findRoute(data.days[day].paths,[from.x,from.z],[to.x,to.z]);
     if(!result||result.total<.01){byId('nav-route-status').textContent='No hay un recorrido de prueba entre estas zonas.';return false;}
-    route={...result,originId:from.id,destinationId:to.id,destination:to.name,day,progress:0};
-    byId('app').classList.add('has-route');byId('route-overlay').removeAttribute('hidden');byId('route-badge').hidden=false;byId('route-progress-section').hidden=false;
+    route={...result,originId:from.id,destinationId:to.id,destination:to.name,day,progress:0,maneuvers:makeManeuvers(result,to.name)};
+    byId('app').classList.add('has-route');byId('route-overlay').removeAttribute('hidden');byId('route-dock').hidden=false;byId('route-badge').hidden=false;byId('route-progress-section').hidden=false;
     byId('nav-route-status').textContent='Desde '+from.name+' hasta un punto de referencia próximo a '+to.name+'.';
     cam=defaultCam();fitView();schedule();updateProgress();return true;
   }
@@ -132,17 +135,19 @@ window.VenueNavigation = (() => {
     byId('nav-progress-label').textContent=percent+'% del recorrido de prueba';
     byId('nav-advance').disabled=route.progress>=1;
     byId('nav-play').disabled=reducedMotion.matches||route.progress>=1;
+    byId('guide-play').disabled=reducedMotion.matches||route.progress>=1;
+    byId('guide-next').disabled=route.progress>=1;byId('guide-back').disabled=route.progress<=0;
     byId('nav-instruction').textContent=route.progress>=1?'Fin de la simulación junto a '+route.destination+'.':route.progress===0?'El punto azul representa una persona simulada.':'Sigue la línea azul en esta demostración.';
     byId('route-badge-label').textContent='Simulación · '+route.destination+' · '+percent+'%';
-    draw();
+    updateGuidance();draw();
   }
   function play() {
     if(animation!==null){pause();return;}
     if(!route||reducedMotion.matches||route.progress>=1)return;
-    byId('nav-play').textContent='Pausar';byId('nav-play').setAttribute('aria-pressed','true');
+    for(const id of ['nav-play','guide-play']){byId(id).textContent='Pausar';byId(id).setAttribute('aria-pressed','true');}
     function step(time) {
       if(!route||document.hidden){pause();return;}
-      if(previousFrame!==null)route.progress=Math.min(1,route.progress+Math.min(time-previousFrame,100)/12000);
+      if(previousFrame!==null)route.progress=Math.min(1,route.progress+Math.min(time-previousFrame,100)/18000);
       previousFrame=time;updateProgress();
       if(route.progress>=1){pause();announce('Fin del recorrido simulado.');return;}
       animation=requestAnimationFrame(step);
@@ -159,9 +164,91 @@ window.VenueNavigation = (() => {
     const point=screen(positionOnRoute());
     byId('route-person').style.display=point?'':'none';
     if(point){byId('route-person').setAttribute('cx',point[0]);byId('route-person').setAttribute('cy',point[1]);}
+    const arrow=byId('route-heading'),ahead=screen(routeTangent().ahead);
+    arrow.style.display=guidance&&point&&ahead?'block':'none';
+    if(guidance&&point&&ahead){const angle=Math.atan2(ahead[0]-point[0],point[1]-ahead[1])*180/Math.PI;arrow.setAttribute('transform','translate('+point[0]+' '+point[1]+') rotate('+angle+')');}
     const end=screen(route.points.at(-1));byId('route-end').style.display=end?'':'none';
     if(end){byId('route-end').setAttribute('cx',end[0]);byId('route-end').setAttribute('cy',end[1]);}
   }
+
+  function makeManeuvers(path,destination) {
+    const turns=[];
+    for(let i=1;i<path.points.length-1;i++) {
+      const incoming=subtract(path.points[i],path.points[i-1]),outgoing=subtract(path.points[i+1],path.points[i]);
+      const angle=Math.atan2(cross(incoming,outgoing),incoming[0]*outgoing[0]+incoming[1]*outgoing[1]);
+      if(Math.abs(angle)>.4)turns.push({at:path.cumulative[i],label:angle>0?'En el próximo cruce, gira a la derecha':'En el próximo cruce, gira a la izquierda',direction:angle>0?'right':'left'});
+    }
+    turns.push({at:path.total,label:'Continúa hacia '+destination,direction:'straight'});
+    return turns;
+  }
+  function routeTangent() {
+    if(!route)return {direction:[0,-1],ahead:[0,0]};
+    const position=positionOnRoute(),travelled=route.progress*route.total;
+    let segment=route.points.length-1;
+    for(let i=1;i<route.points.length;i++)if(route.cumulative[i]>travelled+.001){segment=i;break;}
+    const delta=subtract(route.points[segment],route.points[segment-1]),length=Math.hypot(...delta)||1,direction=delta.map(x=>x/length);
+    return {direction,ahead:[position[0]+direction[0]*3,position[1]+direction[1]*3]};
+  }
+  function followRoute(force=false) {
+    if(!guidance||!following||!route)return;
+    const now=performance.now();
+    if(!force&&now-lastCameraFrame<100)return;
+    lastCameraFrame=now;
+    const position=positionOnRoute(),{direction}=routeTangent();
+    const desired=Math.atan2(-direction[0],-direction[1]);
+    // Follow at a bounded render rate; the terrain is only redrawn on demand.
+    const delta=Math.atan2(Math.sin(desired-cam.az),Math.cos(desired-cam.az));
+    cam.az=force||reducedMotion.matches?desired:cam.az+delta*.3;
+    cam.el=.72;cam.dist=105;cam.target=[position[0]+direction[0]*7,0,position[1]+direction[1]*7];
+    schedule();
+  }
+  function updateGuidance() {
+    if(!route)return;
+    const travelled=route.progress*route.total,found=route.maneuvers.findIndex(m=>m.at>travelled+.001),index=found<0?route.maneuvers.length-1:found;
+    const step=route.maneuvers[index],finished=route.progress>=1;
+    const signature=[route.day,route.originId,route.destinationId,Math.round(route.progress*100),index,finished,following].join('|');
+    if(signature!==guideSignature){
+      guideSignature=signature;
+      byId('guide-context').textContent='Simulación · '+Math.round(route.progress*100)+'%';
+      byId('guide-title').textContent=finished?'Fin de la demostración':step.label;
+      byId('guide-detail').textContent=finished?'Punto próximo a '+route.destination:'Hacia '+route.destination+' · Paso '+(Math.max(0,index)+1)+' de '+route.maneuvers.length;
+      byId('guide-symbol').dataset.direction=finished?'finish':step.direction;
+      byId('guide-symbol').innerHTML=svgIcon(finished?'focus':step.direction==='straight'?'chevron':'route');
+      byId('guide-recenter').setAttribute('aria-pressed',String(following));
+      byId('guide-recenter').querySelector('span').textContent=following?'Siguiendo recorrido':'Recentrar';
+    }
+    if(guidance)followRoute();
+  }
+  function startGuidance() {
+    if(!route||guidance)return;
+    setPanel(false);
+    guidance={camera:{...cam,target:[...cam.target]},mapOnly:byId('app').classList.contains('map-only')};
+    // Use VenueMap's own model and viewport, without loading an external map.
+    if(!guidance.mapOnly)setMapOnly(true);
+    byId('app').classList.add('route-guiding');byId('route-guide').hidden=false;byId('guide-controls').hidden=false;
+    if(route.progress>=1)route.progress=0;
+    following=true;followRoute(true);updateProgress();
+    if(!reducedMotion.matches)play();
+    byId('guide-close').focus({preventScroll:true});announce('Demostración del recorrido. Puedes pausar, avanzar por pasos o explorar el mapa.');
+  }
+  function stopGuidance(restore=true) {
+    if(!guidance)return;
+    pause();const previous=guidance;guidance=null;following=false;
+    byId('app').classList.remove('route-guiding');byId('route-guide').hidden=true;byId('guide-controls').hidden=true;
+    if(restore){
+      if(!previous.mapOnly&&byId('app').classList.contains('map-only'))setMapOnly(false);
+      cam={...previous.camera,target:[...previous.camera.target]};schedule();
+      byId('route-start').focus({preventScroll:true});
+    }
+  }
+  function stepGuidance(direction) {
+    if(!route)return;
+    pause();const travelled=route.progress*route.total,stops=[0,...route.maneuvers.map(m=>m.at)];
+    const next=direction>0?stops.find(at=>at>travelled+.01):[...stops].reverse().find(at=>at<travelled-.01);
+    route.progress=Math.max(0,Math.min(1,(next??(direction>0?route.total:0))/route.total));
+    updateProgress();followRoute(true);
+  }
+
   function renderGPS() {
     if(!initialized)return;
     byId('gps-status').textContent=gpsMessage;
@@ -199,6 +286,7 @@ window.VenueNavigation = (() => {
   }
   function onSelection(point) {
     if(!initialized)return;
+    if(route)stopRoute();
     const button=document.createElement('button');button.type='button';button.id='route-to';button.className='info-secondary';button.innerHTML=svgIcon('route')+'<span>Cómo llegar</span>';
     if(restricted(point)) {
       button.disabled=true;button.title='Área restringida';
@@ -215,12 +303,20 @@ window.VenueNavigation = (() => {
     iconPaths.route='<path d="M5 20V9a4 4 0 0 1 4-4h10m-4-4 4 4-4 4"/><circle cx="5" cy="20" r="2"/>';
     iconPaths.locate='<circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/><path d="M12 2v3m0 14v3M2 12h3m14 0h3"/>';
     const overlay=document.createElementNS(svgNS,'svg');overlay.id='route-overlay';overlay.setAttribute('aria-hidden','true');overlay.setAttribute('hidden','');
-    overlay.innerHTML='<path id="route-outline"/><path id="route-line"/><circle id="route-end" r="6"/><circle id="route-person" r="7"/>';
+    overlay.innerHTML='<path id="route-outline"/><path id="route-line"/><circle id="route-end" r="6"/><circle id="route-person" r="7"/><path id="route-heading" d="M0 -12 9 10 0 6 -9 10Z"/>';
     byId('scene').insertBefore(overlay,byId('pins'));
     const panel=document.createElement('section');panel.id='nav-panel';panel.className='nav-panel';panel.hidden=true;panel.setAttribute('aria-labelledby','nav-title');
     panel.innerHTML='<header class="nav-panel-head"><h2 id="nav-title">Cómo llegar</h2><button type="button" id="nav-close" class="icon-btn" aria-label="Cerrar navegación">'+svgIcon('close')+'</button></header><div class="nav-view-tabs" role="group" aria-label="Herramientas del mapa"><button type="button" id="nav-view-route" aria-pressed="true">Rutas</button><button type="button" id="nav-view-gps" aria-pressed="false">Mi ubicación</button></div><div id="nav-route-content"><p class="nav-demo-note"><strong>Vista previa de rutas</strong><br>Recorridos simulados. El plano aún no tiene coordenadas verificadas.</p><div class="nav-fields"><label for="nav-from">Desde</label><select id="nav-from"></select><label for="nav-to">Hasta</label><select id="nav-to"></select></div><button type="button" id="nav-plan" class="info-action">Ver ruta de prueba</button><p id="nav-route-status" class="nav-copy" role="status"></p><section id="route-progress-section" hidden aria-label="Simular recorrido"><label id="nav-progress-label" for="nav-progress">0% del recorrido de prueba</label><input id="nav-progress" type="range" min="0" max="100" value="0" aria-label="Avance del recorrido de demostración"><p id="nav-instruction" class="nav-copy"></p><div class="nav-actions"><button type="button" id="nav-play" aria-pressed="false">Reproducir</button><button type="button" id="nav-advance">Avanzar</button></div><button type="button" id="nav-stop" class="text-button">Quitar ruta</button></section></div><section class="nav-gps" aria-label="Ubicación del teléfono"><h3>Mi ubicación <span id="nav-day"></span></h3><p id="gps-status" class="nav-copy" role="status"></p><button type="button" id="gps-toggle" class="info-secondary" aria-pressed="false">Activar ubicación</button><p class="nav-privacy">VenueMap no guarda ni envía tus coordenadas GPS.</p></section>';
     byId('app').append(panel);
-    const badge=document.createElement('button');badge.id='route-badge';badge.type='button';badge.hidden=true;badge.className='route-badge';badge.innerHTML='<strong id="route-badge-label"></strong><span>No usar para orientarte en el recinto</span>';badge.onclick=()=>setPanel(true);byId('app').append(badge);
+    const dock=document.createElement('section');dock.id='route-dock';dock.hidden=true;dock.setAttribute('aria-label','Vista previa del recorrido');
+    dock.innerHTML='<button type="button" id="route-badge" class="route-badge" hidden><strong id="route-badge-label"></strong><span>Ver origen, destino y opciones · Simulación</span></button><button type="button" id="route-start" class="info-action">Iniciar demo '+svgIcon('chevron')+'</button>';
+    byId('app').append(dock);byId('route-badge').onclick=()=>setPanel(true);byId('route-start').onclick=startGuidance;
+    const guide=document.createElement('section');guide.id='route-guide';guide.hidden=true;guide.setAttribute('aria-label','Instrucción del recorrido simulado');
+    guide.innerHTML='<div id="guide-symbol" aria-hidden="true">'+svgIcon('route')+'</div><div class="guide-copy"><p id="guide-context"></p><h2 id="guide-title"></h2><p id="guide-detail"></p></div><button type="button" id="guide-close" class="icon-btn" aria-label="Salir de la demostración">'+svgIcon('close')+'</button>';
+    const guideControls=document.createElement('section');guideControls.id='guide-controls';guideControls.hidden=true;guideControls.setAttribute('aria-label','Controles del recorrido simulado');
+    guideControls.innerHTML='<div class="guide-topline"><button type="button" id="guide-recenter" aria-pressed="true">'+svgIcon('focus')+'<span>Siguiendo recorrido</span></button><button type="button" id="guide-options">Opciones</button></div><div class="guide-playback"><button type="button" id="guide-back" class="icon-btn" aria-label="Paso anterior de la simulación">'+svgIcon('chevron')+'</button><button type="button" id="guide-play" aria-pressed="false">Reproducir</button><button type="button" id="guide-next" class="icon-btn" aria-label="Siguiente paso de la simulación">'+svgIcon('chevron')+'</button></div><p>Recorrido simulado · No es orientación GPS</p>';
+    byId('app').append(guide,guideControls);
+    byId('guide-close').onclick=()=>stopGuidance();byId('guide-recenter').onclick=()=>{following=true;followRoute(true);updateGuidance();};byId('guide-options').onclick=()=>setPanel(true);byId('guide-play').onclick=play;byId('guide-next').onclick=()=>stepGuidance(1);byId('guide-back').onclick=()=>stepGuidance(-1);
     const gpsButton=document.createElement('button');gpsButton.id='locate';gpsButton.className='ctl';gpsButton.type='button';gpsButton.title='Mi ubicación';gpsButton.setAttribute('aria-label','Mi ubicación');gpsButton.setAttribute('aria-pressed','false');gpsButton.innerHTML=svgIcon('locate');gpsButton.onclick=()=>{setPanel(true,'gps');startGPS();};
     const navButton=document.createElement('button');navButton.id='navigation-toggle';navButton.className='ctl';navButton.type='button';navButton.title='Cómo llegar';navButton.setAttribute('aria-label','Cómo llegar');navButton.setAttribute('aria-expanded','false');navButton.setAttribute('aria-controls','nav-panel');navButton.innerHTML=svgIcon('route');navButton.onclick=()=>setPanel(byId('nav-panel').hidden);
     byId('reset').before(gpsButton,navButton);
@@ -229,11 +325,15 @@ window.VenueNavigation = (() => {
     for(const id of ['nav-from','nav-to'])byId(id).onchange=stopRoute;
     byId('nav-advance').onclick=()=>{if(route){pause();route.progress=Math.min(1,route.progress+.2);updateProgress();}};
     byId('nav-progress').oninput=event=>{if(route){pause();route.progress=Number(event.target.value)/100;updateProgress();}};
-    document.addEventListener('keydown',event=>{if(event.key==='Escape'&&!byId('nav-panel').hidden){event.preventDefault();event.stopImmediatePropagation();setPanel(false);}},true);
+    document.addEventListener('keydown',event=>{if(event.key!=='Escape')return;if(!byId('nav-panel').hidden){event.preventDefault();event.stopImmediatePropagation();setPanel(false);}else if(guidance){event.preventDefault();event.stopImmediatePropagation();stopGuidance();}},true);
+    const release=()=>{if(guidance&&following){following=false;updateGuidance();}};
+    byId('scene').addEventListener('pointerdown',release,{capture:true});byId('scene').addEventListener('wheel',release,{capture:true,passive:true});
+    byId('canvas').addEventListener('keydown',event=>{if(['ArrowLeft','ArrowRight','ArrowUp','ArrowDown','+','=','-','Home'].includes(event.key))release();});
+    byId('zoomplus').addEventListener('click',release);byId('zoomminus').addEventListener('click',release);byId('reset').addEventListener('click',release);
     document.addEventListener('visibilitychange',()=>{if(document.hidden){pause();stopGPS('Ubicación pausada al salir de la página. Toca Activar ubicación para continuar.');}});
     window.addEventListener('pagehide',()=>{pause();stopGPS();});
     reducedMotion.addEventListener('change',()=>{pause();if(route)updateProgress();});
     if(selected)onSelection(selected);
   }
-  return {initialize,onSelection,onDayChanged,draw,findRoute,suspend:()=>setPanel(false)};
+  return {initialize,onSelection,onDayChanged,draw,findRoute,onMapModeExit:()=>stopGuidance(false)};
 })();

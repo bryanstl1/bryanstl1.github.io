@@ -53,10 +53,12 @@ Se repitió la regresión de días, categorías, búsqueda, selección, cámara,
 
 La validación cubre la interfaz y el recorrido conceptual. No verifica orientación física, precisión GPS en el festival, tiempos de llegada ni accesibilidad real de los caminos. Se requieren georreferenciación y datos oficiales antes de habilitar esas funciones.
 
-## Google Maps del Parque Fundidora
+## Navegación propia de VenueMap
 
-Verificación en los cinco tamaños anteriores: alternancia de vista, iframe de al menos 200 × 200 px (incluido horizontal de 844 × 390), Solo mapa, Escape, recuperación del día, cámara y selección, recarga, destinos y enlaces de indicaciones. Se corrigieron las colisiones de los botones en 320 px y con una ficha seleccionada en pantallas cortas. La carga inicial no solicita Google Maps ni GPS. La fuente se carga al activarla y se reutiliza entre cambios de vista.
+Se retiraron la vista externa, sus archivos y sus enlaces. La prueba de navegación propia registra cero solicitudes a servicios externos y comprueba que no existe ningún iframe ni selector de Google en la página.
 
-Los cuatro enlaces de indicaciones usan `api=1`, `travelmode=walking`, `dir_action=navigate` y destinos permanentes con Monterrey como contexto. No incluyen origen ni coordenadas del visitante. No se activó ubicación real durante las pruebas. También se probó el retorno al mapa 3D sin conexión.
+Pruebas en 1440 × 900, 390 × 844, 320 × 568, 768 × 1024 y 844 × 390: ficha de ruta, iniciar demostración, Solo mapa automático, flecha orientada, instrucciones, pausa, paso siguiente y anterior, cámara de seguimiento, exploración manual, Recentrar, opciones, cierre con Escape, salida mediante Volver y cambio de día. Se comprobó que cerrar una demostración iniciada dentro de Solo mapa conserva ese modo, y que una iniciada desde la vista completa regresa a ella. Los controles de recorrido no se superponen a la barra de zoom.
 
-La prueba local automatizada reemplaza el contenido del iframe de terceros para verificar la integración sin depender de su red. La carga real de Google se comprueba en la página pública tras publicar. No se atribuye a la prueba local validación de caminos, cobertura 360 ni rutas dentro del vallado del festival.
+Con movimiento reducido, la reproducción permanece desactivada y los pasos manuales funcionan. No se solicita GPS al calcular ni al iniciar la demostración. Se repitieron las pruebas de ubicación simulada y estados de error, y la regresión de días, filtros, búsqueda, selección, cámara, planos y pellizco. La inspección visual abarca fichas y recorrido en móvil, pantalla pequeña, horizontal y escritorio.
+
+Los giros proceden de los caminos del modelo; la validación no certifica caminos ni posiciones reales del montaje del festival.

@@ -61,20 +61,18 @@ La reconstrucción continúa siendo conceptual y no oficial. No es un sistema de
 - «Cómo llegar» permite elegir origen y destino, o partir de una zona seleccionada. Los caminos son los trazos del modelo conceptual, separados por día, sin coordenadas GPS. Un grafo divide sus intersecciones y calcula el recorrido más corto hasta un punto próximo al destino. Backstage queda excluido. No se muestran metros ni tiempos reales.
 - La línea azul se proyecta con la cámara del mapa. El punto que recorre la línea es una persona simulada. El distintivo de simulación permanece visible, también en Solo mapa. La ficha de zona se oculta mientras hay una ruta para dejar espacio al recorrido.
 - Un panel contextual separa Rutas y Mi ubicación. En móvil, los controles de simulación preceden al formulario; el panel se cierra al mostrar la ruta y puede reabrirse desde el distintivo. Avanzar y el deslizador permiten recorrer la demostración manualmente.
-- La reproducción dura 12 segundos y actualiza solo la capa SVG. Se pausa al cerrar el panel o cambiar de pestaña. Con movimiento reducido, la reproducción automática queda desactivada y se mantienen los controles manuales.
+- La reproducción dura 18 segundos y actualiza solo la capa SVG. Se pausa al cerrar el panel o cambiar de pestaña. Con movimiento reducido, la reproducción automática queda desactivada y se mantienen los controles manuales.
 
 Para habilitar orientación real hacen falta coordenadas verificadas del plano, caminos peatonales y accesos del festival. `navigation-data.js` declara esta versión como `concept-demo` y deja su calibración en `null`.
 
-## Parque real en Google Maps
+## Navegación dentro del modelo
 
-El selector «Festival 3D / Google Maps» incorpora una segunda vista con el mapa geográfico del Parque Fundidora. Usa el iframe público generado en Google Maps → Compartir → Incorporar un mapa, centrado por Google en 25.6786569, -100.2842344. No se reutilizan sus imágenes para fabricar una base ni se asigna esta coordenada al origen de la maqueta.
+La experiencia se inspira en una aplicación de navegación: elegir destino, revisar una ruta, iniciar un recorrido y recibir la próxima instrucción. Todo ocurre sobre el mapa propio de VenueMap, sin mapas, iframes, enlaces ni servicios externos añadidos.
 
-La vista real ocupa el ancho disponible y ofrece destinos permanentes: Parque Fundidora, Nave Lewis, Museo del Acero Horno 3 y Cintermex. «Cómo llegar» abre las indicaciones a pie de Google Maps; el origen se omite para que Google gestione la ubicación con su propio permiso. VenueMap no transmite las coordenadas que obtiene su comprobador de GPS. Los enlaces siguen el formato oficial Maps URLs, sin una clave de API.
+Tras calcular una ruta, una ficha compacta muestra destino y «Iniciar demo». La demostración activa Solo mapa, acerca la cámara al camino y orienta una flecha en la dirección del recorrido. Una banda presenta el próximo giro calculado con los segmentos del grafo y el paso actual, sin inventar calles, metros ni tiempos de llegada. La etiqueta de simulación permanece visible.
 
-La inserción solo carga al activar Google Maps, conserva los controles y atribución del proveedor, y ofrece recarga y enlace externo. Sin conexión, explica cómo reintentar y permite regresar al mapa 3D local. En Solo mapa se ocultan las herramientas inferiores y se conservan Volver y el selector de vista.
+La cámara sigue el punto simulado; cualquier gesto, zoom o tecla de exploración suspende el seguimiento. «Recentrar» permite retomarlo. Pausa, paso anterior y siguiente permanecen disponibles sobre el mapa. «Opciones» abre el panel y pausa la reproducción. Cerrar o Escape restablecen la vista anterior y conservan la ruta para revisarla; cambiar de día o seleccionar otra zona elimina el recorrido anterior. Volver desde Solo mapa también termina la demostración.
 
-Al cambiar de fuente se pausa la simulación y se detiene el seguimiento de ubicación. Al regresar se conservan el día y la selección del modelo. En pantallas cortas, el selector cede espacio mientras está abierta una ficha; reaparece al cerrarla. Las funciones originales del festival permanecen en su vista 3D.
+El terreno se actualiza bajo demanda, con seguimiento limitado a diez actualizaciones por segundo. Las instrucciones solo se actualizan cuando cambian. Con movimiento reducido, el recorrido comienza pausado, sin reproducción automática; el avance manual y el recentrado continúan disponibles.
 
-La vista de Google representa los caminos y lugares permanentes del parque; no verifica el vallado, los accesos habilitados ni la posición de escenarios o servicios temporales del festival. La calibración del modelo sigue pendiente. La cobertura de imágenes 360 depende de Google y no se promete un Street View del montaje del evento.
-
-Referencias: [Parque Fundidora en Google Maps](https://www.google.com/maps/search/?api=1&query=Parque+Fundidora+Monterrey), [directorio del parque](https://www.parquefundidora.org/mapa/), [documentación de Maps URLs](https://developers.google.com/maps/documentation/urls/get-started).
+La maqueta continúa sin calibración geográfica. El punto y las instrucciones pertenecen a una demostración del grafo conceptual; no se presentan como posición GPS ni guía física dentro del festival.
