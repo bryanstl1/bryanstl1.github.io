@@ -12,6 +12,7 @@ La identidad sigue siendo FUTUR: fondo azul noche, texto claro y acento cálido.
 - Tableta y móvil: cabecera compacta, búsqueda y acceso al directorio; mapa central; categorías con desplazamiento horizontal. La información seleccionada aparece abajo y mantiene los controles de zoom disponibles.
 - Horizontal corto: búsqueda en la cabecera, mapa apaisado y controles horizontales.
 - El encuadre inicial se ajusta a los vértices reales del modelo. Las etiquetas con conflictos visuales se ocultan; sus marcadores y entradas del directorio siguen disponibles.
+- «Ampliar mapa» activa una vista de solo mapa que ocupa todo el viewport y oculta cabecera, directorio, fichas, filtros y textos. «Volver» o Escape restablecen la vista anterior. Los controles de zoom siguen disponibles; no se depende de la API nativa de pantalla completa.
 
 ## Sistema visual
 

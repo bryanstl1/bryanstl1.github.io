@@ -22,6 +22,30 @@ const iconPaths = {
   focus: '<circle cx="12" cy="12" r="6"/><path d="M12 2v4m0 12v4M2 12h4m12 0h4"/>',
   move: '<path d="M12 3v18M3 12h18M9 6l3-3 3 3M9 18l3 3 3-3M6 9l-3 3 3 3m12-6 3 3-3 3"/>'
 };
+iconPaths.expand = '<path d="M8 3H3v5m13-5h5v5M3 16v5h5m13-5v5h-5"/>';
+iconPaths.collapse = '<path d="M3 8h5V3m8 0v5h5M8 21v-5H3m13 5v-5h5"/>';
+let mapModeCamera = null;
+function setMapOnly(enabled) {
+  const app = document.getElementById('app');
+  const button = document.getElementById('mapmode');
+  if (app.classList.contains('map-only') === enabled) return;
+  if (enabled) {
+    mapModeCamera = {...cam, target: [...cam.target]};
+    setBrowsing(false);
+    document.getElementById('query').blur();
+  }
+  app.classList.toggle('map-only', enabled);
+  button.setAttribute('aria-pressed', String(enabled));
+  button.setAttribute('aria-label', enabled ? 'Volver a la vista completa' : 'Ampliar mapa y ocultar información');
+  button.title = enabled ? 'Volver a la vista completa (Escape)' : 'Ampliar mapa';
+  button.innerHTML = svgIcon(enabled ? 'collapse' : 'expand') + '<span>' + (enabled ? 'Volver' : 'Ampliar mapa') + '</span>';
+  resize();
+  if (enabled) fitView();
+  else if (mapModeCamera) { cam = {...mapModeCamera, target: [...mapModeCamera.target]}; mapModeCamera = null; }
+  schedule();
+  button.focus({preventScroll: true});
+  announce(enabled ? 'Solo mapa. Pulsa Volver o Escape para mostrar la información.' : 'Vista completa del festival.');
+}
 const categoryNames = {all: 'Todo', stage: 'Escenarios', bar: 'Barras', food: 'Comida', wc: 'Baños', medical: 'Médicos', entry: 'Accesos', vip: 'Premium'};
 const categorySingular = {stage: 'Escenario', bar: 'Barra', food: 'Comida', wc: 'Sanitarios', medical: 'Servicio médico', entry: 'Acceso', vip: 'Área Premium'};
 function svgIcon(name) {
@@ -129,6 +153,14 @@ function openReference() {
   if (!modal.open) modal.showModal();
 }
 function initializeInterface() {
+  const mapMode = document.createElement('button');
+  mapMode.type = 'button'; mapMode.id = 'mapmode'; mapMode.className = 'icon-btn map-mode-btn';
+  mapMode.setAttribute('aria-pressed', 'false');
+  mapMode.setAttribute('aria-label', 'Ampliar mapa y ocultar información');
+  mapMode.title = 'Ampliar mapa';
+  mapMode.innerHTML = svgIcon('expand') + '<span>Ampliar mapa</span>';
+  mapMode.onclick = () => setMapOnly(!document.getElementById('app').classList.contains('map-only'));
+  document.getElementById('app').append(mapMode);
   const referenceImage = document.createElement('img');
   referenceImage.id = 'refimage'; referenceImage.alt = 'Plano de referencia del festival';
   referenceImage.src = references[0];
@@ -146,6 +178,9 @@ function initializeInterface() {
   });
   document.addEventListener('keydown', event => {
     if (event.key === 'Tab') document.getElementById('app').classList.add('keyboard-input');
+    if (event.key === 'Escape' && document.getElementById('app').classList.contains('map-only')) {
+      event.preventDefault(); setMapOnly(false); return;
+    }
     if (event.key === 'Escape' && !document.getElementById('refmodal').open) {
       const browsing = document.getElementById('app').classList.contains('is-browsing');
       if (browsing) { setBrowsing(false); document.getElementById('browse').focus(); }

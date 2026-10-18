@@ -33,3 +33,7 @@ Se compararon con la versión anterior, sin diferencias, la construcción geomé
 El detector de Impeccable no encontró errores; conservó una advertencia de texto de 11 px. Corresponde a metadatos y etiquetas secundarias de una interfaz compacta; los nombres de zonas, búsqueda y descripciones tienen mayor tamaño. Los avisos legales en móvil usan 10 px. No se añadieron dependencias de ejecución, fuentes ni imágenes externas.
 
 Pendiente fuera de esta verificación: prueba en dispositivos físicos y Safari/iOS. El visor continúa siendo una reconstrucción conceptual no oficial.
+
+## Modo Solo mapa
+
+En los cinco tamaños anteriores se verificó que «Ampliar mapa» hace coincidir el rectángulo de la escena con todo el viewport; oculta los paneles, textos y filtros; mantiene el zoom; y deja visible el botón «Volver». Al salir se conserva el día, la selección y la cámara anterior. También se comprobaron activaciones repetidas, cierre con Escape, retorno del foco y ausencia de excepciones JavaScript. No se usa la API nativa de pantalla completa.
