@@ -211,4 +211,5 @@ function initializeInterface() {
   // Visual-viewport resize covers a mobile keyboard without rebuilding map geometry.
   window.visualViewport?.addEventListener('resize', () => { if (document.activeElement === document.getElementById('query')) setBrowsing(true); });
   renderResults();
+  window.VenueNavigation?.initialize();
 }

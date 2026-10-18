@@ -53,4 +53,14 @@ Referencias consultadas: [Woov](https://www.woovapp.com/es), [Dekmantel](https:/
 
 ## Límites
 
-La reconstrucción continúa siendo conceptual y no oficial. No es un sistema de orientación física, rutas ni emergencias. La interfaz no añade datos de ubicación o de programa del evento. Los planos e imágenes integrados siguen siendo los suministrados originalmente.
+La reconstrucción continúa siendo conceptual y no oficial. No es un sistema de orientación física ni emergencias. La interfaz no añade datos verificados del recinto ni del programa del evento. Los planos e imágenes integrados siguen siendo los suministrados originalmente.
+
+## Ubicación y vista previa de rutas
+
+- «Mi ubicación» solicita el permiso del navegador únicamente tras pulsar su botón. Muestra el estado de la señal y su precisión aproximada; no coloca al usuario sobre el modelo porque falta calibración geográfica. La aplicación no persiste ni transmite las coordenadas. El seguimiento se detiene al cerrar el panel, detenerlo expresamente o salir de la página.
+- «Cómo llegar» permite elegir origen y destino, o partir de una zona seleccionada. Los caminos son los trazos del modelo conceptual, separados por día, sin coordenadas GPS. Un grafo divide sus intersecciones y calcula el recorrido más corto hasta un punto próximo al destino. Backstage queda excluido. No se muestran metros ni tiempos reales.
+- La línea azul se proyecta con la cámara del mapa. El punto que recorre la línea es una persona simulada. El distintivo de simulación permanece visible, también en Solo mapa. La ficha de zona se oculta mientras hay una ruta para dejar espacio al recorrido.
+- Un panel contextual separa Rutas y Mi ubicación. En móvil, los controles de simulación preceden al formulario; el panel se cierra al mostrar la ruta y puede reabrirse desde el distintivo. Avanzar y el deslizador permiten recorrer la demostración manualmente.
+- La reproducción dura 12 segundos y actualiza solo la capa SVG. Se pausa al cerrar el panel o cambiar de pestaña. Con movimiento reducido, la reproducción automática queda desactivada y se mantienen los controles manuales.
+
+Para habilitar orientación real hacen falta coordenadas verificadas del plano, caminos peatonales y accesos del festival. `navigation-data.js` declara esta versión como `concept-demo` y deja su calibración en `null`.
