@@ -1,0 +1,139 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Página web en 72 horas · bryan.stl</title>
+<meta name="description" content="Página web profesional para tu negocio en Monterrey, lista en 72 horas. Precio fijo de $3,600 MXN, con dominio, WhatsApp y Google Maps.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700;12..96,800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{--paper:#F4F2EC;--surface:#FFFFFF;--ink:#141614;--muted:#5F6661;--line:#DCDBD3;--accent:#0E5E4A;--accent-ink:#F1FFF8;--accent-soft:#DCEFE7;--hot:#C2410C}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--paper:#101211;--surface:#181B19;--ink:#EDEFEA;--muted:#9AA39D;--line:#2A2F2C;--accent:#3FB68E;--accent-ink:#06140F;--accent-soft:#16302A;--hot:#FB923C}}
+*{box-sizing:border-box;margin:0}
+body{background:var(--paper);color:var(--ink);font:400 17px/1.6 Inter,system-ui,sans-serif;-webkit-font-smoothing:antialiased}
+.wrap{max-width:1080px;margin:0 auto;padding:0 20px}
+h1,h2,h3{font-family:"Bricolage Grotesque",system-ui,sans-serif;line-height:1.05;letter-spacing:-.02em}
+a{color:inherit}
+nav{display:flex;justify-content:space-between;align-items:center;padding:20px 0}
+nav b{font-family:"Bricolage Grotesque";font-size:20px}
+.btn{display:inline-flex;align-items:center;gap:8px;background:var(--accent);color:var(--accent-ink);text-decoration:none;font-weight:600;padding:14px 22px;border-radius:999px;transition:transform .15s ease}
+.btn:active{transform:scale(.97)}
+.btn.ghost{background:transparent;color:var(--ink);border:1px solid var(--line)}
+.hero{padding:56px 0 72px}
+.tag{display:inline-block;background:var(--accent-soft);color:var(--accent);font-weight:600;font-size:14px;padding:6px 12px;border-radius:999px;margin-bottom:20px}
+.hero h1{font-size:clamp(42px,7.5vw,88px);font-weight:800;max-width:14ch}
+.hero p{font-size:clamp(18px,2.2vw,21px);color:var(--muted);max-width:38ch;margin:22px 0 32px}
+.row{display:flex;flex-wrap:wrap;gap:12px}
+section{padding:64px 0;border-top:1px solid var(--line)}
+section h2{font-size:clamp(32px,4.5vw,48px);font-weight:700;max-width:20ch;margin-bottom:28px}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:16px}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:18px;padding:24px}
+.card h3{font-size:21px;margin-bottom:8px}
+.card p{color:var(--muted);font-size:16px}
+.price{display:grid;grid-template-columns:1.1fr 1fr;gap:24px;align-items:start}
+.price .big{font-family:"Bricolage Grotesque";font-size:clamp(56px,9vw,96px);font-weight:800;line-height:1}
+.price .big small{font-size:.3em;font-weight:500;color:var(--muted)}
+ul.check{list-style:none;padding:0;display:grid;gap:10px}
+ul.check li{padding-left:30px;position:relative}
+ul.check li:before{content:"";position:absolute;left:0;top:5px;width:18px;height:18px;border-radius:50%;background:var(--accent-soft);box-shadow:inset 0 0 0 5px var(--accent)}
+.steps{counter-reset:s;display:grid;gap:16px;grid-template-columns:repeat(auto-fit,minmax(220px,1fr))}
+.steps .card:before{counter-increment:s;content:"0" counter(s);font-family:"Bricolage Grotesque";font-weight:800;font-size:28px;color:var(--accent);display:block;margin-bottom:10px}
+details{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:18px 22px;margin-bottom:10px}
+summary{font-weight:600;cursor:pointer}
+details p{color:var(--muted);margin-top:10px}
+.demo{display:block;text-decoration:none;background:var(--surface);border:1px solid var(--line);border-radius:22px;overflow:hidden}
+.demo .bar{display:flex;gap:6px;padding:12px 16px;border-bottom:1px solid var(--line)}
+.demo .bar i{width:10px;height:10px;border-radius:50%;background:var(--line)}
+.demo .shot{padding:40px 28px;background:linear-gradient(135deg,#1b1410,#3a2418);color:#F5E9DC}
+.demo .shot h3{font-size:clamp(28px,4vw,44px)}
+.demo .shot p{opacity:.75;margin-top:8px}
+.demo .go{padding:16px 24px;font-weight:600;color:var(--accent)}
+.cta{text-align:center;padding:80px 0 96px}
+.cta h2{margin:0 auto 16px;max-width:18ch}
+.cta p{color:var(--muted);margin-bottom:28px}
+.cta .row{justify-content:center}
+footer{padding:28px 0;color:var(--muted);font-size:14px;border-top:1px solid var(--line)}
+@media (max-width:760px){.price{grid-template-columns:1fr}.hero{padding:32px 0 56px}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <nav><b>bryan.stl · web</b><a class="btn ghost" href="#precio">Precio</a></nav>
+
+  <header class="hero">
+    <span class="tag">Monterrey · Lugares limitados por semana</span>
+    <h1>Tu negocio con página web en 72 horas.</h1>
+    <p>Que te encuentren en Google, te escriban por WhatsApp y vean tus precios sin preguntar. Precio fijo y sin mensualidades escondidas.</p>
+    <div class="row">
+      <a class="btn" href="mailto:bryan.stl270201@gmail.com?subject=Quiero%20mi%20p%C3%A1gina%20web&body=Hola%20Bryan%2C%20tengo%20un%20negocio%20de%3A%20">Quiero la mía</a>
+      <a class="btn ghost" href="demo-barberia.html">Ver un ejemplo</a>
+    </div>
+  </header>
+
+  <section>
+    <h2>Lo que gana tu negocio</h2>
+    <div class="grid">
+      <div class="card"><h3>Te encuentran</h3><p>Apareces cuando buscan "barbería cerca de mí" o tu giro en tu colonia. Conectada a tu perfil de Google Maps.</p></div>
+      <div class="card"><h3>Te escriben directo</h3><p>Botón de WhatsApp en cada sección. El cliente llega con la duda resuelta y listo para agendar o comprar.</p></div>
+      <div class="card"><h3>Se ve profesional</h3><p>Diseño a la medida de tu marca, rápido en el celular, que es donde te van a ver el 90% de las veces.</p></div>
+    </div>
+  </section>
+
+  <section id="ejemplo">
+    <h2>Así se ve una entrega</h2>
+    <a class="demo" href="demo-barberia.html">
+      <div class="bar"><i></i><i></i><i></i></div>
+      <div class="shot"><h3>Barbería Navaja · Monterrey</h3><p>Servicios, precios, galería, horarios, mapa y reserva por WhatsApp.</p></div>
+      <div class="go">Abrir el demo completo →</div>
+    </a>
+  </section>
+
+  <section id="precio">
+    <div class="price">
+      <div>
+        <h2>Un precio, todo incluido</h2>
+        <div class="big">$3,600 <small>MXN · pago único</small></div>
+        <p style="color:var(--muted);margin-top:14px">50% para arrancar y 50% cuando la apruebes. Si no te gusta el primer diseño, lo rehago.</p>
+      </div>
+      <div class="card">
+        <ul class="check">
+          <li>Diseño a la medida, de una página, con hasta 6 secciones</li>
+          <li>Dominio .com o .mx el primer año</li>
+          <li>Hosting incluido, sin mensualidad</li>
+          <li>Botón de WhatsApp, Google Maps y redes</li>
+          <li>Optimizada para celular y para Google</li>
+          <li>2 rondas de cambios</li>
+          <li>Entrega en 72 horas hábiles</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <h2>Cómo funciona</h2>
+    <div class="steps">
+      <div class="card"><h3>Me mandas tu info</h3><p>Logo, fotos, servicios y precios. Por WhatsApp o correo, como te acomode.</p></div>
+      <div class="card"><h3>Diseño en 48 h</h3><p>Te mando el link para que la veas en tu celular y me pidas cambios.</p></div>
+      <div class="card"><h3>Sale en vivo</h3><p>Conecto el dominio y tu Google Maps. Ya la puedes compartir.</p></div>
+    </div>
+  </section>
+
+  <section>
+    <h2>Preguntas frecuentes</h2>
+    <details><summary>¿Tengo que pagar algo cada mes?</summary><p>No. El hosting es gratis. A partir del segundo año solo renuevas el dominio (unos $300 a $500 MXN al año).</p></details>
+    <details><summary>¿Y si después quiero cambiar precios o fotos?</summary><p>Los cambios del primer mes van incluidos. Después, cada cambio pequeño cuesta $250 MXN o puedes tomar un plan de mantenimiento.</p></details>
+    <details><summary>No tengo buenas fotos de mi negocio.</summary><p>Uso fotos de banco de buena calidad mientras tanto y te digo cuáles conviene tomar con tu celular.</p></details>
+    <details><summary>¿Cómo pago?</summary><p>Transferencia, depósito en OXXO o Mercado Pago. Te doy recibo.</p></details>
+  </section>
+
+  <div class="cta">
+    <h2>Esta semana tomo 3 negocios.</h2>
+    <p>Escríbeme el giro de tu negocio y te mando una propuesta sin compromiso.</p>
+    <div class="row"><a class="btn" href="mailto:bryan.stl270201@gmail.com?subject=Quiero%20mi%20p%C3%A1gina%20web">Pedir propuesta</a></div>
+  </div>
+</div>
+<footer><div class="wrap">bryan.stl · Diseño web para negocios locales · Monterrey, N.L.</div></footer>
+</body>
+</html>

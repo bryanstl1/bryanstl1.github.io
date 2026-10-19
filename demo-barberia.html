@@ -1,0 +1,95 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Barbería Navaja · Demo</title>
+<meta name="description" content="Sitio de ejemplo para una barbería ficticia en Monterrey. Demo de bryan.stl web.">
+<meta name="robots" content="noindex">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#15100D;--surface:#211913;--ink:#F5E9DC;--muted:#BBA894;--line:#3A2C22;--gold:#D9A45B;--gold-ink:#1A120C}
+:root[data-theme="light"]{--bg:#F7F1EA;--surface:#FFFFFF;--ink:#20160F;--muted:#6F5E4E;--line:#E4D8CA;--gold:#9A6424;--gold-ink:#FFF7EC}
+*{box-sizing:border-box;margin:0}
+body{background:var(--bg);color:var(--ink);font:400 17px/1.6 Inter,system-ui,sans-serif}
+.wrap{max-width:1040px;margin:0 auto;padding:0 20px}
+h1,h2,h3{font-family:Fraunces,Georgia,serif;line-height:1.05}
+.ribbon{background:var(--gold);color:var(--gold-ink);text-align:center;font-size:13px;font-weight:600;padding:8px 16px}
+.ribbon a{color:inherit}
+nav{display:flex;justify-content:space-between;align-items:center;padding:20px 0}
+nav b{font-family:Fraunces;font-size:22px;letter-spacing:.04em}
+.btn{display:inline-block;background:var(--gold);color:var(--gold-ink);font-weight:600;text-decoration:none;padding:13px 22px;border-radius:10px}
+.btn.line{background:transparent;color:var(--ink);border:1px solid var(--line)}
+.hero{padding:48px 0 72px;display:grid;grid-template-columns:1.2fr 1fr;gap:40px;align-items:center}
+.hero h1{font-size:clamp(44px,8vw,92px);font-weight:800}
+.hero p{color:var(--muted);font-size:19px;margin:18px 0 28px;max-width:34ch}
+.hero .img{aspect-ratio:4/5;border-radius:18px;background:url("https://images.unsplash.com/photo-1503951914875-452162b0f3f1?w=900&q=70") center/cover,var(--surface)}
+.row{display:flex;gap:12px;flex-wrap:wrap}
+section{padding:64px 0;border-top:1px solid var(--line)}
+h2{font-size:clamp(32px,5vw,52px);margin-bottom:28px}
+.menu{display:grid;gap:0}
+.menu div{display:flex;justify-content:space-between;gap:16px;padding:18px 0;border-bottom:1px dashed var(--line)}
+.menu span{color:var(--muted);font-size:15px;display:block}
+.menu strong{font-family:Fraunces;font-size:22px;white-space:nowrap}
+.gal{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+.gal i{aspect-ratio:1;border-radius:12px;background:var(--surface) center/cover}
+.info{display:grid;grid-template-columns:1fr 1fr;gap:24px}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:24px}
+.card p{color:var(--muted)}
+.quote{font-family:Fraunces;font-size:clamp(22px,3vw,30px);line-height:1.3}
+.quote small{display:block;font-family:Inter;font-size:15px;color:var(--muted);margin-top:12px}
+.wa{position:fixed;right:16px;bottom:16px;background:#25D366;color:#06210F;font-weight:700;text-decoration:none;padding:14px 20px;border-radius:999px;box-shadow:0 8px 24px rgba(0,0,0,.3)}
+footer{padding:32px 0 96px;color:var(--muted);font-size:14px;border-top:1px solid var(--line)}
+@media (max-width:760px){.hero,.info{grid-template-columns:1fr}.hero .img{aspect-ratio:16/10}.gal{grid-template-columns:repeat(2,1fr)}}
+</style>
+</head>
+<body>
+<div class="ribbon">Demo: negocio ficticio hecho por bryan.stl web · <a href="servicios.html">¿Quieres una así para tu negocio?</a></div>
+<div class="wrap">
+  <nav><b>NAVAJA</b><a class="btn line" href="#reserva">Reservar</a></nav>
+  <header class="hero">
+    <div>
+      <h1>Corte clásico, sin esperar.</h1>
+      <p>Barbería en la colonia Obispado. Reserva tu hora por WhatsApp y llega directo a la silla.</p>
+      <div class="row"><a class="btn" href="#reserva">Reservar por WhatsApp</a><a class="btn line" href="#precios">Ver precios</a></div>
+    </div>
+    <div class="img" role="img" aria-label="Barbero haciendo un corte"></div>
+  </header>
+
+  <section id="precios">
+    <h2>Servicios</h2>
+    <div class="menu">
+      <div><p>Corte clásico<span>Tijera y máquina, lavado incluido · 40 min</span></p><strong>$220</strong></div>
+      <div><p>Corte + barba<span>Toalla caliente y navaja · 60 min</span></p><strong>$350</strong></div>
+      <div><p>Arreglo de barba<span>Perfilado y aceite · 25 min</span></p><strong>$160</strong></div>
+      <div><p>Corte infantil<span>Menores de 12 años · 30 min</span></p><strong>$170</strong></div>
+    </div>
+  </section>
+
+  <section>
+    <h2>El trabajo</h2>
+    <div class="gal">
+      <i style="background-image:url('https://images.unsplash.com/photo-1599351431202-1e0f0137899a?w=500&q=60')"></i>
+      <i style="background-image:url('https://images.unsplash.com/photo-1621605815971-fbc98d665033?w=500&q=60')"></i>
+      <i style="background-image:url('https://images.unsplash.com/photo-1585747860715-2ba37e788b70?w=500&q=60')"></i>
+    </div>
+  </section>
+
+  <section>
+    <p class="quote">"Llegué a la hora que reservé y en 40 minutos ya iba de salida. Ya no voy a otro lado."<small>Ejemplo de reseña de Google</small></p>
+  </section>
+
+  <section id="reserva">
+    <h2>Horario y ubicación</h2>
+    <div class="info">
+      <div class="card"><h3>Horario</h3><p>Lunes a viernes de 10:00 a 20:00<br>Sábado de 9:00 a 18:00<br>Domingo cerrado</p></div>
+      <div class="card"><h3>Dirección</h3><p>Col. Obispado, Monterrey, N.L.<br>Estacionamiento en la calle</p><p style="margin-top:14px"><a class="btn" href="#reserva">Abrir en Google Maps</a></p></div>
+    </div>
+  </section>
+</div>
+<footer><div class="wrap">Barbería Navaja es un negocio ficticio. Sitio de demostración de <a href="servicios.html" style="color:inherit">bryan.stl web</a>.</div></footer>
+<a class="wa" href="#reserva" aria-label="Reservar por WhatsApp (demo)">WhatsApp</a>
+</body>
+</html>
