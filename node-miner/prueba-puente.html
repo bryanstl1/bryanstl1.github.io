@@ -45,9 +45,9 @@ function stop(user=false){
 }
 $("start").addEventListener("click",()=>{
  if(socket)return;
- const token=$("token").value.trim();
+ const token=$("token").value;
  if(token.length<32){show("El secreto debe tener al menos 32 caracteres. Usa el valor que guardaste en Cloudflare.","warn");return}
- if(!/^[A-Za-z0-9_!@#$%^&*().,~+=:;-]{32,256}$/.test(token)){show("El valor contiene espacios o caracteres especiales no admitidos para una ruta URL. Genera una contraseña con letras y números en Cloudflare y conserva la nueva en tu gestor.","warn");return}
+ if(token.length>512){show("La contraseña es demasiado larga para esta prueba. Usa el secreto de Cloudflare tal como fue generado.","warn");return}
  finished=false;opened=false;
  let ws;
  try{ws=new WebSocket("wss://"+HOST+"/ws/"+encodeURIComponent(token))}
