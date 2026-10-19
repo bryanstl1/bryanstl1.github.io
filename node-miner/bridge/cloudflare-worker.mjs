@@ -1,4 +1,4 @@
-// NODE MINER: DRAFT. Bridge only, never mines. NOT DEPLOYED.
+// NODE MINER: deployed relay source. Bridge only; NEVER mines.
 // Cloudflare Secret: BRIDGE_TOKEN >=32 characters. Never commit this secret.
 // Fixed upstream: HashVault TLS, cannot be changed by a client.
 import { connect } from "cloudflare:sockets";
@@ -9,7 +9,8 @@ export default {
     if(request.headers.get("Upgrade")?.toLowerCase()!=="websocket") return new Response("WebSocket only",{status:426});
     if(!env.BRIDGE_TOKEN||env.BRIDGE_TOKEN.length<32) return new Response("Not configured",{status:503});
     if(request.headers.get("Origin")!=="https://bryanstl1.github.io") return new Response("Forbidden",{status:403});
-    if(u.pathname!=="/ws/"+env.BRIDGE_TOKEN) return new Response("Not found",{status:404});
+    let receivedToken;try{receivedToken=decodeURIComponent(u.pathname.slice(4))}catch{return new Response("Not found",{status:404})}
+    if(!u.pathname.startsWith("/ws/")||receivedToken!==env.BRIDGE_TOKEN) return new Response("Not found",{status:404});
     if((u.searchParams.has("pool")&&u.searchParams.get("pool")!==host)||(u.searchParams.has("port")&&u.searchParams.get("port")!=="443")) return new Response("Pool denied",{status:403});
     let upstream;
     try {upstream=connect({hostname:host,port},{secureTransport:"on"});await upstream.opened}
