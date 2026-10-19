@@ -17,7 +17,7 @@ export default {
   if (request.method === "GET" && url.pathname === "/health") {
    const allowOrigin = request.headers.get("Origin") === APP_ORIGIN ? APP_ORIGIN : "null";
    return Response.json(
-    { service: "node-miner-bridge", mining: false, bridgeTokenConfigured: configured, protocol: "wss-auth-v3", poolConnected: false },
+    { service: "node-miner-bridge", mining: false, bridgeTokenConfigured: configured, protocol: "wss-auth-v4", poolConnected: false },
     { headers: {"Access-Control-Allow-Origin": allowOrigin, "Cache-Control": "no-store", "Vary": "Origin"} }
    );
   }
@@ -36,7 +36,7 @@ export default {
   server.accept();
   let state="auth", tcp=null, writer=null, ended=false, buf="";
   let queue=Promise.resolve(), windowStart=Date.now(), messageCount=0;
-  const send=(type)=>{if(!ended){try{server.send(JSON.stringify({type}))}catch{}}};
+  const send=(type,detail={})=>{if(!ended){try{server.send(JSON.stringify({type,...detail}))}catch{}}};
   const authTimer=setTimeout(()=>{if(state==="auth"){send("auth_timeout");void cleanup(1008,"Authentication timeout")}},8000);
   async function cleanup(code=1000,reason="Finished"){
    if(ended)return;
@@ -46,43 +46,63 @@ export default {
    try{await tcp?.close()}catch{}
   }
 
-  async function connectPool(){
-   if(ended || state!=="connecting")return;
+  function classify(err){
+   const msg=String(err?.message||err||"").toLowerCase();
+   if(/blocked|disallow|prohibited|not permitted|loop detected/.test(msg))return "destination_blocked";
+   if(/dns|resolve|lookup|name or service|enotfound/.test(msg))return "dns_failed";
+   if(/refused|econnrefused/.test(msg))return "connection_refused";
+   if(/timed out|timeout/.test(msg))return "timeout";
+   if(/certificate|cert|tls|ssl|handshake/.test(msg))return "tls_or_handshake";
+   if(/unreachable|ehostunreach|enetunreach/.test(msg))return "unreachable";
+   return "connection_error";
+  }
+  async function probe(host,mode,limitMs){
+   let trial=null;
    try{
-    tcp=connect({hostname:POOL_HOST,port:POOL_PORT},{secureTransport:"on"});
+    trial=connect({hostname:host,port:POOL_PORT},{secureTransport:mode});
     await Promise.race([
-     tcp.opened,
-     new Promise((_,reject)=>setTimeout(()=>reject(new Error("TLS timeout")),9000))
+     trial.opened,
+     new Promise((_,reject)=>setTimeout(()=>reject(new Error("Probe timeout")),limitMs))
     ]);
-    if(ended){try{await tcp.close()}catch{}return;}
-    writer=tcp.writable.getWriter();
-    state="ready";
-    send("pool_ready");
-    ctx.waitUntil(readPool());
-   }catch(tlsError){
-    // Diagnostics only: NEVER relay mining work over an unauthenticated,
-    // unencrypted upstream. No login, wallet, work, or shares are transmitted.
-    state="diagnosing";
-    console.error("NODE MINER TLS upstream error:",String(tlsError?.message||"unknown").slice(0,180));
-    send("pool_tls_failed");
-    try{await tcp?.close()}catch{}
-    tcp=null;
-    let plain=null;
-    try{
-     plain=connect({hostname:POOL_HOST,port:POOL_PORT},{secureTransport:"off"});
-     await Promise.race([
-      plain.opened,
-      new Promise((_,reject)=>setTimeout(()=>reject(new Error("TCP timeout")),6000))
-     ]);
-     if(!ended)send("pool_plain_reachable");
-    }catch(tcpError){
-     console.error("NODE MINER plain TCP diagnostic error:",String(tcpError?.message||"unknown").slice(0,180));
-     if(!ended)send("pool_unavailable");
-    }finally{
-     try{await plain?.close()}catch{}
-     state="diagnosed";
-     setTimeout(()=>{void cleanup(1000,"Diagnostic complete")},800);
+    if(ended){try{await trial.close()}catch{}return false}
+    send("probe_ok",{host,mode});
+    if(mode==="on"){
+     tcp=trial;
+     writer=tcp.writable.getWriter();
+     state="ready";
+     send("pool_ready",{host});
+     ctx.waitUntil(readPool());
+     return true;
     }
+    return false;
+   }catch(err){
+    const category=classify(err);
+    console.error("NODE MINER pool probe:",host,mode,category,String(err?.message||"").slice(0,160));
+    send("probe_failed",{host,mode,category});
+    return false;
+   }finally{
+    if(trial!==tcp)try{await trial?.close()}catch{}
+   }
+  }
+  async function connectPool(){
+   if(ended||state!=="connecting")return;
+   state="diagnosing";
+   // Official HashVault backup: hashvault.pro site lists pool.hashvault.sh.
+   // Do NOT send a wallet, login, any Stratum work or shares during tests.
+   for(const host of [POOL_HOST,"pool.hashvault.sh"]){
+    if(ended)return;
+    send("probe_start",{host,mode:"on"});
+    if(await probe(host,"on",6500))return;
+   }
+   for(const host of [POOL_HOST,"pool.hashvault.sh"]){
+    if(ended)return;
+    send("probe_start",{host,mode:"off"});
+    await probe(host,"off",5500);
+   }
+   if(!ended){
+    state="diagnosed";
+    send("diagnostics_done");
+    setTimeout(()=>{void cleanup(1000,"Diagnostics finished")},900);
    }
   }
   async function readPool(){
