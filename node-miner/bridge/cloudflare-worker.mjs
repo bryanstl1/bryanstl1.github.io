@@ -17,7 +17,7 @@ export default {
   if (request.method === "GET" && url.pathname === "/health") {
    const allowOrigin = request.headers.get("Origin") === APP_ORIGIN ? APP_ORIGIN : "null";
    return Response.json(
-    { service: "node-miner-bridge", mining: false, bridgeTokenConfigured: configured, protocol: "wss-auth-v2", poolConnected: false },
+    { service: "node-miner-bridge", mining: false, bridgeTokenConfigured: configured, protocol: "wss-auth-v3", poolConnected: false },
     { headers: {"Access-Control-Allow-Origin": allowOrigin, "Cache-Control": "no-store", "Vary": "Origin"} }
    );
   }
@@ -52,18 +52,37 @@ export default {
     tcp=connect({hostname:POOL_HOST,port:POOL_PORT},{secureTransport:"on"});
     await Promise.race([
      tcp.opened,
-     new Promise((_,reject)=>setTimeout(()=>reject(new Error("Connection timeout")),9000))
+     new Promise((_,reject)=>setTimeout(()=>reject(new Error("TLS timeout")),9000))
     ]);
     if(ended){try{await tcp.close()}catch{}return;}
     writer=tcp.writable.getWriter();
     state="ready";
     send("pool_ready");
     ctx.waitUntil(readPool());
-   }catch(e){
-    state="pool_error";
-    send("pool_unavailable");
-    console.error("NODE MINER upstream connect failed:",e?.name||"error");
-    setTimeout(()=>{void cleanup(1011,"Pool unavailable")},250);
+   }catch(tlsError){
+    // Diagnostics only: NEVER relay mining work over an unauthenticated,
+    // unencrypted upstream. No login, wallet, work, or shares are transmitted.
+    state="diagnosing";
+    console.error("NODE MINER TLS upstream error:",String(tlsError?.message||"unknown").slice(0,180));
+    send("pool_tls_failed");
+    try{await tcp?.close()}catch{}
+    tcp=null;
+    let plain=null;
+    try{
+     plain=connect({hostname:POOL_HOST,port:POOL_PORT},{secureTransport:"off"});
+     await Promise.race([
+      plain.opened,
+      new Promise((_,reject)=>setTimeout(()=>reject(new Error("TCP timeout")),6000))
+     ]);
+     if(!ended)send("pool_plain_reachable");
+    }catch(tcpError){
+     console.error("NODE MINER plain TCP diagnostic error:",String(tcpError?.message||"unknown").slice(0,180));
+     if(!ended)send("pool_unavailable");
+    }finally{
+     try{await plain?.close()}catch{}
+     state="diagnosed";
+     setTimeout(()=>{void cleanup(1000,"Diagnostic complete")},800);
+    }
    }
   }
   async function readPool(){
