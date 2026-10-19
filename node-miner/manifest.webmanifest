@@ -1,0 +1,19 @@
+{
+  "name": "NODE MINER · Control de minería",
+  "short_name": "NODE MINER",
+  "description": "Panel de demostración para minería Monero remota. Sin minería activa.",
+  "id": "/node-miner/",
+  "start_url": "/node-miner/",
+  "scope": "/node-miner/",
+  "display": "standalone",
+  "background_color": "#090c0b",
+  "theme_color": "#090c0b",
+  "icons": [
+    {
+      "src": "./icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}
