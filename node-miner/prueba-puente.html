@@ -5,7 +5,7 @@
 <h1>Verificar el puente.<br><em>Sin minar todavía.</em></h1>
 <p>Separaremos la prueba en tres etapas: comprobar el Worker, autenticar con tu token y verificar que pueda establecer un canal TCP/TLS con HashVault. No enviaremos dirección de Monero, login ni hashes.</p>
 <div class="alert"><b>Privacidad:</b> introduce solamente el valor de <b>BRIDGE_TOKEN</b> que guardaste en tu gestor de contraseñas. Se enviará cifrado mediante un mensaje WSS a tu Worker después de abrir la conexión. No aparecerá en la URL. No se guardará en GitHub, en la página ni en el almacenamiento del navegador. <b>No compartas capturas con el secreto visible.</b></div>
-<div class="card"><div class="chip">DIAGNÓSTICO MANUAL · HASTA 25 SEGUNDOS</div>
+<div class="card"><div class="chip">DIAGNÓSTICO MANUAL · HASTA 40 SEGUNDOS</div>
 <div id="bridgeHealth" class="status" role="status" aria-live="polite">Consultando el estado público del Worker…</div>
 <label for="token">Tu secreto BRIDGE_TOKEN</label><input id="token" type="password" placeholder="Pega el secreto guardado en Cloudflare" autocomplete="off" spellcheck="false" autocorrect="off" autocapitalize="off">
 <p class="caption">El campo queda oculto. No uses tu contraseña de GitHub ni las 16 palabras de tu wallet. Se necesita el valor exacto que creaste en Cloudflare.</p>
@@ -27,7 +27,7 @@
 "use strict";
 const $=id=>document.getElementById(id);
 const HOST="node-miner-bridge.bryan-stl270201.workers.dev";
-let socket=null,timeout=0,finished=false,stage="idle";
+let socket=null,timeout=0,finished=false,stage="idle",probeLog=[];
 
 function show(msg,kind=""){
  $("result").className="status"+(kind?" "+kind:"");
@@ -52,11 +52,11 @@ async function checkWorker(){
   const resp=await fetch("https://"+HOST+"/health",{cache:"no-store",mode:"cors"});
   if(!resp.ok)throw Error("HTTP "+resp.status);
   const data=await resp.json();
-  const v2=data.protocol==="wss-auth-v3";
+  const v2=data.protocol==="wss-auth-v4";
   const conf=data.bridgeTokenConfigured===true;
   $("bridgeHealth").className="status"+(conf&&v2?" good":" warn");
   $("bridgeHealth").textContent=
-   "Worker: "+(v2?"versión 3 instalada":"versión antigua o incorrecta")+
+   "Worker: "+(v2?"versión 4 instalada":"versión antigua o incorrecta")+
    ". BRIDGE_TOKEN: "+(conf?"configurado (32+ caracteres)":"NO configurado o demasiado corto")+
    ". Minería: apagada.";
   if(!v2||!conf){$("start").disabled=true;show("Primero corrige el Worker o BRIDGE_TOKEN en Cloudflare. No pruebes WSS todavía.","warn")}
@@ -75,13 +75,13 @@ $("start").addEventListener("click",()=>{
  let ws;
  try{ws=new WebSocket("wss://"+HOST+"/ws")}
  catch(e){show("Safari no pudo crear el WebSocket: "+e.message,"warn");return}
- socket=ws;finished=false;stage="opening";
+ socket=ws;finished=false;stage="opening";probeLog=[];
  $("start").disabled=true;$("stop").disabled=false;
  show("Etapa 1/3: abriendo WebSocket seguro con Cloudflare…");
  timeout=setTimeout(()=>{
   if(finished)return;
   fail("Tiempo de espera agotado. Última etapa: "+stage+". No hay minería activa.");
- },25000);
+ },40000);
 
  ws.onopen=()=>{
   if(finished)return;
@@ -98,25 +98,45 @@ $("start").addEventListener("click",()=>{
    show("✓ Token aceptado por Cloudflare. Etapa 3/3: conectando por TCP/TLS con HashVault…","good");
   }else if(m.type==="pool_ready"){
    stage="ready";
-   show("✓ Token correcto. ✓ WebSocket activo. ✓ TCP/TLS conectado a HashVault. Esta prueba NO minera XMR. Cerrando sesión…","good");
+   const name=m.host==="pool.hashvault.sh"?"respaldo pool.hashvault.sh":"principal pool.hashvault.pro";
    clearClock();
-   timeout=setTimeout(()=>pass("¡Prueba completada! ✓ Cloudflare autenticó el token y abrió conexión TLS con HashVault. Sin wallet, sin shares, sin minería."),2300);
+   timeout=setTimeout(()=>pass("✓ BRIDGE_TOKEN aceptado. ✓ TCP/TLS conectado al servidor "+name+". ¡Puente funcional! Sin wallet, sin shares ni minería activa."),2200);
+   show("✓ Canal cifrado disponible con "+name+". Terminando diagnóstico…","good");
+  }else if(m.type==="probe_start"){
+   stage="probing";
+   const host=m.host==="pool.hashvault.sh"?"respaldo .sh":"principal .pro";
+   const protocol=m.mode==="on"?"TLS":"TCP sin cifrar (solo diagnóstico)";
+   show("✓ Token correcto. Probando "+host+" mediante "+protocol+"…\n\n"+probeLog.join("\n"),"warn");
+  }else if(m.type==="probe_failed"){
+   const host=m.host==="pool.hashvault.sh"?"Respaldo .sh":"Principal .pro";
+   const protocol=m.mode==="on"?"TLS":"TCP";
+   const translation={
+    destination_blocked:"destino bloqueado por Cloudflare",
+    dns_failed:"resolución DNS fallida",
+    connection_refused:"conexión rechazada",
+    timeout:"tiempo de espera agotado",
+    tls_or_handshake:"error de TLS o handshake",
+    unreachable:"servidor inaccesible",
+    connection_error:"error de conexión (consultar Cloudflare)"
+   };
+   probeLog.push("✕ "+host+" / "+protocol+": "+(translation[m.category]||"error desconocido"));
+   show("✓ Token validado. Pruebas de conexión en curso…\n\n"+probeLog.join("\n"),"warn");
+  }else if(m.type==="probe_ok"){
+   const host=m.host==="pool.hashvault.sh"?"Respaldo .sh":"Principal .pro";
+   probeLog.push("✓ "+host+" / "+(m.mode==="on"?"TLS":"TCP sin cifrar")+": puerto accesible");
+   show("✓ Token correcto.\n\n"+probeLog.join("\n"),"good");
+  }else if(m.type==="diagnostics_done"){
+   fail("✓ BRIDGE_TOKEN correcto. Ninguna conexión TLS completada.\n\n"+probeLog.join("\n")+"\n\nEl Worker permanece activo; no hay minería ni transmisión de datos privados.");
   }else if(m.type==="auth_failed"){
    fail("Cloudflare rechazó BRIDGE_TOKEN. El valor escrito no coincide con el secreto actualmente guardado. No lo compartas aquí.");
   }else if(m.type==="auth_timeout"){
    fail("Cloudflare cerró la sesión por demora al autenticar.");
-  }else if(m.type==="pool_tls_failed"){
-   stage="diagnosing-plain";
-   show("✓ Token válido. ⚠ La conexión TLS falló. Comprobando únicamente si el puerto 443 admite TCP sin cifrado; no se enviarán wallet, login ni hashes.","warn");
-  }else if(m.type==="pool_plain_reachable"){
-   pass("✓ Token correcto. ✓ TCP a HashVault:443 accesible SIN TLS. La conexión cifrada sigue fallando, posiblemente por el certificado del pool. Esta prueba NO transmitió datos de minería. No activaremos minería sin revisar la seguridad.");
-  }else if(m.type==="pool_unavailable"){
-   fail("✓ Token correcto. ⚠ Fallaron TLS y la prueba de TCP sin cifrado hacia HashVault:443. Revisaremos el registro de Cloudflare o un servidor alternativo.");
+
   }
  };
  ws.onerror=()=>{
   if(finished)return;
-  if(stage==="opening")fail("No se abrió el WebSocket. Revisa el origen permitido y que Cloudflare haya publicado la versión 3.");
+  if(stage==="opening")fail("No se abrió el WebSocket. Revisa el origen permitido y que Cloudflare haya publicado la versión 4.");
   else fail("El WebSocket reportó un error en la etapa: "+stage+". Comprueba el estado del Worker.");
  };
  ws.onclose=event=>{
