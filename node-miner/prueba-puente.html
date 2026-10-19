@@ -1,0 +1,86 @@
+<!doctype html><html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#080c09"><meta name="referrer" content="no-referrer"><title>NODE MINER · Verificar puente WSS</title>
+<style>:root{color-scheme:dark;--bg:#080c09;--panel:#121a14;--line:#2c422e;--lime:#c8ff68;--muted:#9bad9d}*{box-sizing:border-box}body{margin:0;background:var(--bg);color:#eef6ee;font:14px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}main{max-width:720px;margin:auto;padding:20px 16px 88px}header{display:flex;justify-content:space-between;align-items:center;padding:8px 0 20px;border-bottom:1px solid var(--line);font-weight:850;letter-spacing:.1px}header span{color:var(--lime)}header a{color:#d6e7d2;text-decoration:none;font-size:12px}.eyebrow{color:var(--lime);font-size:10px;font-weight:900;letter-spacing:2px;margin:34px 0 12px}h1{font-size:clamp(32px,8vw,50px);letter-spacing:-1.8px;line-height:1.05;margin:0 0 16px}h1 em{font-style:normal;color:var(--lime)}p{font-size:13px;color:var(--muted);line-height:1.6}.card{background:var(--panel);border:1px solid var(--line);border-radius:15px;padding:20px;margin:16px 0}.alert{border-radius:12px;padding:14px 15px;background:#292417;border:1px solid #826b37;color:#edce97;font-size:12px;line-height:1.65;margin:22px 0}.chip{border-radius:6px;border:1px solid #45673e;color:var(--lime);font-weight:850;letter-spacing:.7px;font-size:10px;display:inline-block;padding:8px 10px}.caption{font-size:11px;color:#a9b7aa;line-height:1.65}label{display:block;font-size:12px;color:#d1dfca;font-weight:750;margin:15px 0 8px}input{width:100%;background:#060b08;border:1px solid #465d44;color:#fff;padding:15px;border-radius:11px;font-size:16px;outline:0}input:focus{border-color:#c8ff68}button{padding:15px;border:0;font-size:14px;font-weight:850;border-radius:10px;flex:1;min-width:0}button.primary{background:var(--lime);color:#173010}button.secondary{background:#293b2d;color:#d4e6d3;border:1px solid #405644}button:disabled{opacity:.4}button:focus-visible{outline:2px solid #fff}.buttons{display:flex;gap:10px;margin:14px 0 0}.status{border:1px solid #3b563d;background:#0c150e;border-radius:10px;padding:15px;font-size:13px;color:#d1e6c6;line-height:1.6;margin-top:18px;min-height:66px}.status.good{color:#c8ff68;border-color:#658e50}.status.warn{color:#ffcf97;border-color:#90714b}.item{display:flex;gap:12px;justify-content:space-between;padding:13px 0;border-bottom:1px solid #28382b;font-size:12px}.item:last-child{border:0}.item span{color:var(--muted)}.item b{text-align:right;max-width:68%;word-break:break-word}a{color:var(--lime)}h2{font-size:19px;margin:4px 0 10px}.code{font-family:monospace;word-break:break-all;color:#bce99b}footer{color:#8ba38d;line-height:1.6;font-size:11px;padding-top:14px}</style></head><body><main>
+<header>NODE <span>MINER</span> / BRIDGE <a href="./puente.html">← Configuración</a></header>
+<div class="eyebrow">PRUEBA 01 / WEBSOCKET SEGURO</div>
+<h1>Verificar el puente.<br><em>Sin minar todavía.</em></h1>
+<p>Confirmaremos que Safari puede abrir una conexión WSS con tu Cloudflare Worker, que a su vez intenta establecer un canal TCP/TLS con el pool HashVault. No enviaremos dirección de Monero, login ni hashes.</p>
+<div class="alert"><b>Privacidad:</b> introduce solamente el valor de <b>BRIDGE_TOKEN</b> que guardaste en tu gestor de contraseñas. Se enviará por WSS únicamente a tu Worker como parte de la ruta de autenticación. No se guardará en GitHub, en la página ni en el almacenamiento del navegador. <b>No compartas capturas con el secreto visible.</b></div>
+<div class="card"><div class="chip">PRUEBA MANUAL · 5 SEGUNDOS</div>
+<label for="token">Tu secreto BRIDGE_TOKEN</label><input id="token" type="password" placeholder="Pega el secreto guardado en Cloudflare" autocomplete="off" spellcheck="false" autocorrect="off" autocapitalize="off">
+<p class="caption">El campo queda oculto. No uses tu contraseña de GitHub ni las 16 palabras de tu wallet. Se necesita el valor exacto que creaste en Cloudflare.</p>
+<div class="buttons"><button id="start" class="primary" type="button">▶ Probar conexión</button><button id="stop" class="secondary" type="button" disabled>■ Detener</button></div>
+<div id="result" class="status" role="status" aria-live="polite">En espera. Todavía no se ha abierto ninguna conexión.</div>
+</div>
+<div class="card"><h2>Qué vamos a comprobar</h2>
+<div class="item"><span>Tu dispositivo</span><b>Safari / iPhone</b></div>
+<div class="item"><span>Worker</span><b class="code">node-miner-bridge</b></div>
+<div class="item"><span>Pool candidato</span><b>pool.hashvault.pro:443</b></div>
+<div class="item"><span>Protocolo del navegador</span><b>WebSocket seguro (WSS)</b></div>
+<div class="item"><span>Canal Worker → Pool</span><b>TCP con TLS</b></div>
+<div class="item"><span>Wallet / claves privadas</span><b>No utilizadas</b></div>
+<div class="item"><span>Minería activa</span><b>No</b></div>
+<p class="caption">Una conexión WSS correcta demostraría que el puente funciona en esta prueba. Aún quedaría por implementar y validar el protocolo Stratum (login, trabajos, shares aceptadas) y la integración de RandomX.</p></div>
+<p><a href="./randomx.html">Volver a la prueba RandomX en el CPU del iPhone →</a></p>
+<footer>NODE MINER · Prueba voluntaria. Cierra la conexión al cambiar de pestaña, dejar la página o pulsar Detener. Ningún script de minería se ejecuta en esta pantalla.</footer></main>
+<script>
+"use strict";
+const $=x=>document.getElementById(x);
+const HOST="node-miner-bridge.bryan-stl270201.workers.dev";
+let socket=null,timeout=0,opened=false,finished=false;
+function show(message,kind){$("result").className="status"+(kind?" "+kind:"");$("result").textContent=message}
+function clearTime(){if(timeout){clearTimeout(timeout);timeout=0}}
+function reset(){
+ clearTime();
+ $("token").value="";
+ $("start").disabled=false;
+ $("stop").disabled=true;
+}
+function stop(user=false){
+ finished=true;
+ clearTime();
+ const ws=socket;socket=null;
+ if(ws)try{ws.close(1000,"Test finished")}catch{}
+ reset();
+ if(user)show("Prueba detenida manualmente. Ninguna wallet ni hashes fueron transmitidos.");
+}
+$("start").addEventListener("click",()=>{
+ if(socket)return;
+ const token=$("token").value.trim();
+ if(token.length<32){show("El secreto debe tener al menos 32 caracteres. Usa el valor que guardaste en Cloudflare.","warn");return}
+ if(!/^[A-Za-z0-9_!@#$%^&*().,~+=:;-]{32,256}$/.test(token)){show("El valor contiene espacios o caracteres especiales no admitidos para una ruta URL. Genera una contraseña con letras y números en Cloudflare y conserva la nueva en tu gestor.","warn");return}
+ finished=false;opened=false;
+ let ws;
+ try{ws=new WebSocket("wss://"+HOST+"/ws/"+encodeURIComponent(token))}
+ catch(e){show("Safari no pudo iniciar la conexión: "+e.message,"warn");return}
+ socket=ws;
+ $("start").disabled=true;$("stop").disabled=false;
+ show("Estableciendo WSS con Cloudflare y abriendo el canal TCP/TLS hacia HashVault…");
+ timeout=setTimeout(()=>{
+   if(finished)return;
+   const wasOpen=opened;
+   stop(false);
+   if(wasOpen)show("✓ Prueba completada. WSS estuvo conectado con el puente. El Worker abrió el canal TCP/TLS antes de aceptar la conexión. No hubo minería ni login.","good");
+   else show("La conexión no respondió a tiempo. Comprueba que el secreto sea el correcto y que el Worker esté desplegado.","warn");
+ },5000);
+ ws.onopen=()=>{
+   if(finished)return;
+   opened=true;
+   $("token").value="";
+   show("✓ Conexión WSS aceptada. El Worker abrió un socket TCP/TLS antes del handshake. Se cerrará automáticamente en unos segundos.","good");
+ };
+ ws.onerror=()=>{
+   if(finished)return;
+   stop(false);
+   show("No fue posible abrir WSS. Causas posibles: secreto incorrecto, Worker no configurado, Origin no permitido o conexión TLS al pool fallida. Comprueba el nombre del secreto y los registros de Cloudflare.","warn");
+ };
+ ws.onclose=()=>{
+   if(finished)return;
+   const didOpen=opened;
+   stop(false);
+   show(didOpen?"El puente abrió WSS, pero la conexión se cerró antes de terminar la prueba. Hay que revisar su estabilidad.":"El Worker rechazó o cerró la conexión. Verifica el secreto y revisa los registros.","warn");
+ };
+});
+$("stop").addEventListener("click",()=>stop(true));
+document.addEventListener("visibilitychange",()=>{if(document.hidden&&socket)stop(true)});
+window.addEventListener("pagehide",()=>{if(socket)stop(false)});
+</script></body></html>
