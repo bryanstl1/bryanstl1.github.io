@@ -1,6 +1,6 @@
 # Validación de interfaz — 18 octubre 2026
 
-Comprobación local en Chromium 153, mediante HTTP y capturas de navegador. No se afirma una prueba en un iPhone físico ni en Safari.
+Integración del modelo 3D y el diseño creados en Claude con las funciones de la versión anterior. Comprobación local por HTTP en Chromium 141 (Playwright, WebGL por SwiftShader), con capturas revisadas a mano. No se afirma una prueba en un iPhone físico ni en Safari.
 
 | Tamaño | Resultado |
 | --- | --- |
@@ -9,56 +9,44 @@ Comprobación local en Chromium 153, mediante HTTP y capturas de navegador. No s
 | Móvil pequeño 320 × 568 | Correcto |
 | Tableta 768 × 1024 | Correcto |
 | Horizontal 844 × 390 | Correcto |
+| Móvil 390 × 844 con movimiento reducido | Correcto |
 
-En cada tamaño se comprobaron ambos días, las ocho categorías, los recuentos de zonas, búsqueda sin acentos, búsqueda sin resultados y recuperación, selección desde el directorio, ficha de información, centrar zona, zoom, restablecer, rotación con puntero y teclado, apertura del plano, carga de sus imágenes y cierre con Escape. También se verificó que el día 2 muestra su propio plano y sus cuatro escenarios.
+## Funciones comprobadas en cada tamaño
 
-No hubo excepciones de JavaScript, solicitudes fallidas de activos ni desbordamiento horizontal del documento durante esos recorridos. Los controles principales mantienen objetivos de al menos 44 px, salvo los botones de día en horizontal corto, de 40 px de alto.
+- Ambos días: directorio completo, marcadores visibles, `aria-pressed` de días y categorías.
+- Las ocho categorías: recuento del directorio y del mapa; el mapa solo muestra la categoría elegida.
+- Búsqueda con y sin acentos («bano», «baños», «medico», «MÉDICO»), por varias palabras («barra pista»), sin resultados y recuperación con «Mostrar todas las zonas», y botón de limpiar.
+- Selección desde el directorio y desde un marcador del mapa; ficha visible; «Centrar esta zona» lleva la cámara a la zona; cierre de la ficha.
+- Cámara: acercar, alejar, restablecer, flechas, `+`/`-`, `Inicio`, arrastre, rueda y pellizco con eventos táctiles reales de Chromium.
+- Planos de referencia de ambos días: apertura, imagen cargada y propia de cada día, cierre con Escape y retorno del foco al botón, también cuando se abrió con un toque.
+- Solo mapa: ocupa todo el viewport, oculta paneles y conserva el zoom; Escape y «Volver» restauran día, selección y cámara.
+- Ambiente nocturno y vuelta al atardecer.
+- Objetivos táctiles de al menos 40 px (44 px en controles principales) y sin desbordamiento horizontal.
+- Sin errores de JavaScript ni solicitudes a otros dominios. three.js, la fuente y los planos se sirven desde la carpeta del proyecto. También abre directamente desde el archivo HTML.
 
-Se comprobó el gesto de pellizco con eventos táctiles reales de Chromium. Con `prefers-reduced-motion: reduce`, la ficha no tiene transformaciones y conserva solo una transición breve de opacidad. La vista también abre directamente desde el archivo HTML con sus archivos de interfaz locales. La ubicación requiere un contexto seguro HTTPS.
+## Navegación
 
-## Revisión visual
+- Matriz de rutas: 824 de 824 pares dirigidos de zonas públicas (ambos días) tienen recorrido, y ningún tramo entra en el radio de una zona restringida. Backstage no admite ruta.
+- Red peatonal validada aparte contra el modelo: ningún tramo cruza naves, bloques, agua, canales, escenarios, piezas de Horno 3 ni patas de La Grúa; ninguno sale del terreno; cada zona pública queda a menos de 40 px del plano de su camino.
+- Flujo completo en cada tamaño: «Cómo llegar» desde la ficha, ficha de ruta con origen y destino, revisión en el panel, cambio de destino y «Ver ruta de prueba», «Iniciar demo».
+- Demostración: Solo mapa automático, flecha orientada en el modelo, instrucción de giro y paso actual, cámara cercana, avance de la reproducción y seguimiento de cámara, pausa, paso siguiente y anterior, exploración manual que suspende el seguimiento y «Recentrar» que lo retoma.
+- «Opciones» abre el panel y pausa; Escape lo cierra; un segundo Escape termina la demo, vuelve a la vista completa y conserva la ruta. «Volver» y la X también terminan la demo. Una demo iniciada dentro de Solo mapa conserva ese modo.
+- Elegir otra zona o cambiar de día elimina el recorrido del modelo y de la interfaz.
+- Los controles de la demo, la instrucción, el zoom y «Volver» no se superponen en ningún tamaño.
+- Con movimiento reducido la demo empieza pausada y sin reproducción automática; los pasos manuales funcionan.
 
-| Antes | Después | Motivo |
-| --- | --- | --- |
-| Introducción y panel permanente sobre el mapa | Directorio lateral en escritorio; búsqueda compacta y ficha contextual en móvil | Dar prioridad al recinto |
-| Controles pequeños y ocultos al seleccionar | Controles de 44 px disponibles con la ficha abierta | Mantener zoom y restauración accesibles |
-| Iconos de varios estilos y emojis | SVG locales de trazo consistente | Unificar la interfaz sin dependencias remotas |
-| El modelo se recorta según el tamaño | Encuadre inicial calculado con sus vértices | Adaptar la cámara a la pantalla |
-| Plano en una capa sin foco protegido | Diálogo nativo con cierre y retorno de foco | Mejorar navegación con teclado |
+## Ubicación
 
-## Integridad y detector
+GPS simulado mediante un reemplazo de la API del navegador: lectura válida con precisión de ±15 m, lectura imprecisa, lectura antigua, permiso denegado, señal no disponible, tiempo agotado, API ausente y solicitud pendiente; tras detener, una respuesta tardía se ignora. Ni la carga de la página, ni las rutas, ni la demo piden ubicación. Las coordenadas no aparecen en la interfaz ni se guardan en el almacenamiento local o de sesión, y no se coloca una posición sobre el modelo. Cerrar el panel detiene el seguimiento. No se solicitó ubicación real.
 
-Se compararon con la versión anterior, sin diferencias, la construcción geométrica del recinto, los datos de los puntos de ambos días y las cinco imágenes integradas.
+## Rendimiento
 
-El detector de Impeccable no encontró errores; conservó una advertencia de texto de 11 px. Corresponde a metadatos y etiquetas secundarias de una interfaz compacta; los nombres de zonas, búsqueda y descripciones tienen mayor tamaño. Los avisos legales en móvil usan 10 px. No se añadieron dependencias de ejecución, fuentes ni imágenes externas.
+Carga lista en unos 0,75 s en local; cambio de día en unos 35 ms; un fotograma del modelo en unos 2 ms en este entorno. Sin bucle de animación continuo: el modelo se dibuja bajo demanda y las sombras se calculan una vez por día o ambiente. Peso total de la página sin comprimir: unos 0,9 MB, de los que three.js ocupa 0,6 MB (GitHub Pages lo sirve comprimido).
 
-Pendiente fuera de esta verificación: prueba en dispositivos físicos y Safari/iOS. El visor continúa siendo una reconstrucción conceptual no oficial.
+## Revisión visual y detector
 
-## Modo Solo mapa
+Capturas de ficha, ruta, panel de rutas, demostración y ambiente nocturno en los cinco tamaños. Se corrigieron durante la revisión: etiquetas que quedaban bajo el zoom o salían por el borde (ahora pasan al otro lado o se ocultan), rótulos de edificios tapados por marcadores (ahora ceden), la cabecera en 320 px y el botón «Reproducir» recortado en pantalla pequeña.
 
-En los cinco tamaños anteriores se verificó que «Ampliar mapa» hace coincidir el rectángulo de la escena con todo el viewport; oculta los paneles, textos y filtros; mantiene el zoom; y deja visible el botón «Volver». Al salir se conserva el día, la selección y la cámara anterior. También se comprobaron activaciones repetidas, cierre con Escape, retorno del foco y ausencia de excepciones JavaScript. No se usa la API nativa de pantalla completa.
+El detector de Impeccable sobre `index.html` no encontró problemas tras subir a blanco el texto que va directamente sobre el cielo y fijar 11 px como tamaño mínimo.
 
-## Ubicación y recorridos simulados
-
-Pruebas por HTTP en los cinco tamaños de la tabla, sin errores de JavaScript:
-
-- Ruta desde una zona seleccionada, cierre del panel para ver el mapa, distintivo persistente, avance manual, deslizador, reproducción y proyección al girar la cámara.
-- Cambio de día que elimina el recorrido anterior, rutas en Solo mapa y orden de cierre con Escape.
-- Grafo de caminos: 162 pares dirigidos de zonas públicas entre los dos días producen recorridos. Backstage no admite selección de ruta. No se usa GPS como origen sin calibración.
-- GPS simulado mediante un reemplazo de la API del navegador: lectura válida con precisión de ±15 m, permiso denegado, señal no disponible, tiempo agotado, lectura antigua, API ausente y solicitud pendiente. No se solicitó ubicación real durante las pruebas.
-- La carga de la página y la creación de rutas no activan GPS. Detenerlo limpia el seguimiento e ignora respuestas tardías. Las coordenadas no aparecen en la interfaz ni se guardan en el almacenamiento local o de sesión; no se coloca una ubicación ficticia sobre el modelo.
-- Movimiento reducido: reproducción desactivada y avance manual disponible. La reproducción se pausa al cerrar el panel o salir de la pestaña.
-
-Se repitió la regresión de días, categorías, búsqueda, selección, cámara, zoom, planos y gestos. La geometría, los datos originales de los puntos y las cinco imágenes integradas permanecen iguales. Revisión visual de las vistas de ruta, mapa y GPS en móvil y escritorio, incluyendo pantalla pequeña y horizontal.
-
-La validación cubre la interfaz y el recorrido conceptual. No verifica orientación física, precisión GPS en el festival, tiempos de llegada ni accesibilidad real de los caminos. Se requieren georreferenciación y datos oficiales antes de habilitar esas funciones.
-
-## Navegación propia de VenueMap
-
-Se retiraron la vista externa, sus archivos y sus enlaces. La prueba de navegación propia registra cero solicitudes a servicios externos y comprueba que no existe ningún iframe ni selector de Google en la página.
-
-Pruebas en 1440 × 900, 390 × 844, 320 × 568, 768 × 1024 y 844 × 390: ficha de ruta, iniciar demostración, Solo mapa automático, flecha orientada, instrucciones, pausa, paso siguiente y anterior, cámara de seguimiento, exploración manual, Recentrar, opciones, cierre con Escape, salida mediante Volver y cambio de día. Se comprobó que cerrar una demostración iniciada dentro de Solo mapa conserva ese modo, y que una iniciada desde la vista completa regresa a ella. Los controles de recorrido no se superponen a la barra de zoom.
-
-Con movimiento reducido, la reproducción permanece desactivada y los pasos manuales funcionan. No se solicita GPS al calcular ni al iniciar la demostración. Se repitieron las pruebas de ubicación simulada y estados de error, y la regresión de días, filtros, búsqueda, selección, cámara, planos y pellizco. La inspección visual abarca fichas y recorrido en móvil, pantalla pequeña, horizontal y escritorio.
-
-Los giros proceden de los caminos del modelo; la validación no certifica caminos ni posiciones reales del montaje del festival.
+Pendiente fuera de esta verificación: prueba en dispositivos físicos y en Safari/iOS. La validación cubre la interfaz y el recorrido conceptual; no certifica caminos, posiciones ni accesos reales del montaje del festival.

@@ -2,77 +2,82 @@
 
 ## Alcance y modo
 
-Refinamiento de la interfaz existente. Modo **Operate**: localizar una zona, entender su función y explorar el recinto. Se conservan los dos días, sus diez puntos respectivos, las descripciones, los planos compartidos, la geometría y el visor Canvas 3D compatible.
+Modo **Operate**: localizar una zona, entender su función, explorar el recinto y ensayar un recorrido. El modelo 3D, la geometría, los edificios, el terreno y el diseño de la página provienen del render creado en Claude para FUTUR 2026. La versión anterior del repositorio es la referencia funcional: todo lo que el usuario podía hacer sigue disponible, adaptado a este modelo.
 
-La identidad sigue siendo FUTUR: fondo azul noche, texto claro y acento cálido. El modelo del recinto es el elemento dominante; la interfaz lo acompaña sin una portada intermedia.
+Sedes por día, según la información del festival: Día 1 (viernes 13 de noviembre, 18:00 a 02:00) en Nave Lewis; Día 2 (sábado 14 de noviembre, 12:00 a 02:00) en La Grúa y Horno 3, dentro del Parque Fundidora.
+
+## Modelo 3D
+
+- three.js r128 servido desde `vendor/`, sin CDN. Renderizado bajo demanda: no hay bucle continuo; solo se dibuja al mover la cámara, cambiar de estado o durante la demostración.
+- Las sombras se calculan una vez por día o ambiente (`shadowMap.autoUpdate = false`), porque la geometría es estática. Los árboles y faroles usan instancias.
+- Todas las posiciones están en píxeles de los planos oficiales (`venue-data.js`); `cal` convierte el plano isométrico en coordenadas del modelo. No son coordenadas GPS ni metros.
+- Arquitectura real investigada: Horno 3 con su estructura de acero, elevador inclinado, colector, estufas Cowper, chimenea y Galería del Acero circular; La Grúa con vigas de celosía, carro y rieles; naves con techo a dos aguas, linternilla y ventanales. Las proporciones son aproximadas.
+- Los caminos visibles se generan con la misma red peatonal que usa la navegación (`navigation-data.js`): una ruta solo recorre lo que se ve como camino.
+- Rótulos de edificios (NAVE LEWIS, HORNO 3, LA GRÚA) y nombres de zonas son etiquetas HTML proyectadas: participan en el control de solapamientos y ceden ante marcadores y controles.
 
 ## Composición
 
-- Escritorio: identidad y días en la cabecera; búsqueda y directorio de zonas en una columna de 288 px; mapa a la derecha; categorías bajo el mapa.
-- Tableta y móvil: cabecera compacta, búsqueda y acceso al directorio; mapa central; categorías con desplazamiento horizontal. La información seleccionada aparece abajo y mantiene los controles de zoom disponibles.
-- Horizontal corto: búsqueda en la cabecera, mapa apaisado y controles horizontales.
-- El encuadre inicial se ajusta a los vértices reales del modelo. Las etiquetas con conflictos visuales se ocultan; sus marcadores y entradas del directorio siguen disponibles.
-- «Ampliar mapa» activa una vista de solo mapa que ocupa todo el viewport y oculta cabecera, directorio, fichas, filtros y textos. «Volver» o Escape restablecen la vista anterior. Los controles de zoom siguen disponibles; no se depende de la API nativa de pantalla completa.
+- Escritorio: FUTUR y fecha en la cabecera; días y ambiente a la derecha. Búsqueda y directorio en una columna de 288 px; el recinto flota sobre el cielo a la derecha; categorías bajo el mapa.
+- Tableta y móvil: cabecera compacta, búsqueda con acceso al directorio y al plano; mapa central; categorías con desplazamiento horizontal. La ficha aparece abajo y los controles de zoom siguen disponibles.
+- Horizontal corto: búsqueda en la cabecera, mapa apaisado y controles en fila.
+- Encuadre inicial calculado con los vértices del modelo. En pantallas verticales la cámara elige, entre giros de 22,5°, el que mejor llena la pantalla, con preferencia por el ángulo del póster.
+- «Ampliar mapa» activa Solo mapa: ocupa el viewport y oculta cabecera, directorio, fichas, filtros y textos. «Volver» o Escape restauran la vista anterior. No depende de la pantalla completa nativa.
 
 ## Sistema visual
 
 | Rol | Valor |
 | --- | --- |
-| Fondo | `#0d1422` |
-| Panel | `#151e2e` |
-| Control elevado | `#202c40` |
-| Texto | `#f5f4f0` |
-| Texto secundario | `#b3b9c8` |
-| Acento de acción y selección | `#ffb779` sobre `#291a13` |
-| Familia | Sans del sistema; sin fuentes remotas |
-| Espaciado | 4, 8, 12, 16, 24 y 32 px |
-| Radios | 12 px en controles; 16 px en fichas; 20–24 px en mapa |
+| Cielo atardecer | `#b8592a` → `#a65d84` → `#4d5b93` → `#141c44` |
+| Cielo noche | `#1b1747` → `#2e1f58` → `#18224f` → `#070a1b` |
+| Panel | `#161f4b` |
+| Control elevado | `#25316d` |
+| Texto | `#ffffff`; secundario en paneles `#cfd5f2` |
+| Activo | píldora blanca con texto `#1d2b6b` |
+| Acento cálido | `#ffc48a`, solo sobre paneles (selección, avisos breves) |
+| Ruta | línea `#208fe9` con borde blanco |
+| Familia | Archivo (variable, servida localmente; ancho 100–125 %, peso 400–800) |
+| Radios | píldoras en controles; 16 px en paneles |
 | Objetivos táctiles | 44 px en controles principales y marcadores |
 
-Los colores semánticos de escenarios, comida, barras y servicios se conservan. Los iconos locales usan el mismo trazo SVG. Los textos de zonas y descripciones priman sobre los símbolos.
+El cielo está oscurecido respecto al póster para que el texto blanco cumpla AA sobre él; el texto secundario atenuado solo se usa dentro de paneles. Los marcadores son círculos con borde blanco, como en el plano oficial; los colores por categoría se mantienen. La trama de semitono del póster es estática y casi imperceptible.
 
 ## Movimiento e interacción
 
 - Ficha: transición interrumpible de opacidad y desplazamiento, 200–220 ms, `cubic-bezier(.23,1,.32,1)`.
-- Botones: confirmación de pulsación de 140 ms con escala `.97`.
-- Hover con movimiento solo para ratón o puntero preciso.
-- Movimiento reducido: la ficha conserva una transición de opacidad de 100 ms y elimina el desplazamiento. No hay animaciones continuas del mapa.
-- Flechas del teclado para rotar el mapa; `+`/`-` para zoom; `Inicio` para el encuadre completo.
+- Botones: confirmación de pulsación de 140 ms con escala `.97`. Hover con movimiento solo para puntero preciso.
+- «Centrar esta zona»: transición de cámara de 320 ms con curva de entrada y salida. Las teclas no animan.
+- Cambio de ambiente: fundido del cielo de 240 ms. Los haces de luz de los escenarios son estáticos.
+- Movimiento reducido: sin transiciones de cámara ni desplazamientos; la ficha conserva un fundido de 100 ms.
+- Teclado sobre el mapa: flechas para rotar, `+`/`-` para zoom, `Inicio` para el encuadre completo. Escape cierra en orden: panel de rutas, demostración, Solo mapa, directorio y ficha.
+- Un gesto puede empezar sobre un marcador: si el dedo se desplaza, gira o hace zoom; si no se mueve, selecciona.
 - Plano en `<dialog>` nativo: foco protegido, cierre con Escape y retorno al botón de origen.
-- Búsqueda con y sin acentos, resultados vacíos recuperables y estados `aria-pressed`.
+- Búsqueda con y sin acentos, por varias palabras y sinónimos de categoría; resultados vacíos recuperables; Enter abre el primer resultado.
+
+## Navegación propia del festival
+
+Flujo: elegir zona → «Cómo llegar» → revisar origen y destino → ver ruta → «Iniciar demo». Todo ocurre en el modelo de VenueMap, sin mapas, iframes ni enlaces externos.
+
+- Grafo: los tramos de `navigation-data.js` se dividen en sus cruces y en los puntos de acceso de origen y destino; Dijkstra calcula el recorrido más corto. Los tramos que entran en el radio de una zona restringida no existen para el público, y Backstage no admite rutas.
+- Las zonas tienen un punto de acceso propio cuando su marcador está sobre un edificio o escenario (por ejemplo, el frente de cada escenario).
+- La línea, el destino y la persona simulada se dibujan dentro del modelo, sobre el terreno. Durante la demo, una flecha en el camino apunta en el sentido del recorrido.
+- La demo activa Solo mapa con una cámara cercana que sigue el recorrido detrás de la flecha. Instrucciones de giro calculadas con el grafo; paso actual y total. Reproducción de 18 s, pausa, paso anterior y siguiente. Cualquier arrastre, zoom o tecla de exploración suspende el seguimiento; «Recentrar» lo retoma. «Opciones» abre el panel y pausa. Cerrar o Escape restauran la vista anterior y conservan la ruta; «Volver» también termina la demo. Cambiar de día o elegir otra zona elimina el recorrido.
+- Movimiento reducido: la demo empieza pausada, sin reproducción automática; el avance manual y Recentrar siguen disponibles.
+- Sin metros, tiempos de llegada ni calles inventadas. El distintivo de simulación permanece visible.
+
+## Ubicación
+
+«Mi ubicación» pide el permiso del navegador solo al pulsar su botón. Muestra el estado y la precisión aproximada; no coloca al usuario sobre el modelo porque falta calibración geográfica. Las coordenadas no se guardan, registran ni envían. El seguimiento se detiene al cerrar el panel, detenerlo, ocultar la página o salir. Estados cubiertos: lectura válida, imprecisa, antigua, permiso denegado, señal no disponible, tiempo agotado, API ausente y solicitud pendiente.
+
+`navigation-data.js` declara `kind: 'concept-demo'` y `calibration: null`. Para habilitar orientación real hacen falta coordenadas verificadas del plano, caminos peatonales y accesos del festival.
 
 ## Aplicación de las skills
 
-**Impeccable:** distribución por tarea, separación entre mapa y herramientas, adaptación estructural por tamaño, jerarquía y estados. Se usó su contexto, evaluación de layout y detector mecánico.
+**Impeccable:** contexto del proyecto, modo Operate, piso de calidad y detector mecánico sobre la página construida (sin hallazgos tras ajustar el contraste del texto sobre el cielo y el tamaño mínimo en 320 px).
 
-**Emil Kowalski:** las animaciones comunican selección o confirmación; se evitan esperas, bucles decorativos y dependencias de movimiento. La ficha usa transiciones interrumpibles y los gestos siguen controlando el visor directamente.
+**Emil Kowalski / animate:** solo se anima lo que comunica estado o lugar (ficha, centrar zona, cambio de ambiente, seguimiento de cámara). Sin animación en acciones de teclado ni bucles decorativos; curvas y duraciones de su tabla; movimiento reducido incluido.
 
-**Taste Skill:** investigación de referencias y marco visual. El sorteo produjo la dirección «The pinned poster», semilla `1050761360`, conservando paleta y tipo. Se tomó el principio de marco estable con contenido central cambiante: FUTUR y sus herramientas permanecen mientras cambia el día y el recinto. No se impuso la composición de una landing con scroll, fotografía o titulares sobre los controles del mapa, porque este es un producto operativo.
-
-Referencias consultadas: [Woov](https://www.woovapp.com/es), [Dekmantel](https://dekmantelfestival.com/), y las notas de Taste sobre Revelatio Studio, Glitch&Grit y Builders Table. Se toma el principio de jerarquía y marco, sin copiar sus imágenes, textos ni activos.
+**Taste Skill:** orientada a páginas públicas; aquí solo se tomó el principio de marco estable del póster (FUTUR y sus herramientas permanecen mientras cambia el recinto). No se aplicaron composiciones de marketing a los controles del mapa.
 
 ## Límites
 
-La reconstrucción continúa siendo conceptual y no oficial. No es un sistema de orientación física ni emergencias. La interfaz no añade datos verificados del recinto ni del programa del evento. Los planos e imágenes integrados siguen siendo los suministrados originalmente.
-
-## Ubicación y vista previa de rutas
-
-- «Mi ubicación» solicita el permiso del navegador únicamente tras pulsar su botón. Muestra el estado de la señal y su precisión aproximada; no coloca al usuario sobre el modelo porque falta calibración geográfica. La aplicación no persiste ni transmite las coordenadas. El seguimiento se detiene al cerrar el panel, detenerlo expresamente o salir de la página.
-- «Cómo llegar» permite elegir origen y destino, o partir de una zona seleccionada. Los caminos son los trazos del modelo conceptual, separados por día, sin coordenadas GPS. Un grafo divide sus intersecciones y calcula el recorrido más corto hasta un punto próximo al destino. Backstage queda excluido. No se muestran metros ni tiempos reales.
-- La línea azul se proyecta con la cámara del mapa. El punto que recorre la línea es una persona simulada. El distintivo de simulación permanece visible, también en Solo mapa. La ficha de zona se oculta mientras hay una ruta para dejar espacio al recorrido.
-- Un panel contextual separa Rutas y Mi ubicación. En móvil, los controles de simulación preceden al formulario; el panel se cierra al mostrar la ruta y puede reabrirse desde el distintivo. Avanzar y el deslizador permiten recorrer la demostración manualmente.
-- La reproducción dura 18 segundos y actualiza solo la capa SVG. Se pausa al cerrar el panel o cambiar de pestaña. Con movimiento reducido, la reproducción automática queda desactivada y se mantienen los controles manuales.
-
-Para habilitar orientación real hacen falta coordenadas verificadas del plano, caminos peatonales y accesos del festival. `navigation-data.js` declara esta versión como `concept-demo` y deja su calibración en `null`.
-
-## Navegación dentro del modelo
-
-La experiencia se inspira en una aplicación de navegación: elegir destino, revisar una ruta, iniciar un recorrido y recibir la próxima instrucción. Todo ocurre sobre el mapa propio de VenueMap, sin mapas, iframes, enlaces ni servicios externos añadidos.
-
-Tras calcular una ruta, una ficha compacta muestra destino y «Iniciar demo». La demostración activa Solo mapa, acerca la cámara al camino y orienta una flecha en la dirección del recorrido. Una banda presenta el próximo giro calculado con los segmentos del grafo y el paso actual, sin inventar calles, metros ni tiempos de llegada. La etiqueta de simulación permanece visible.
-
-La cámara sigue el punto simulado; cualquier gesto, zoom o tecla de exploración suspende el seguimiento. «Recentrar» permite retomarlo. Pausa, paso anterior y siguiente permanecen disponibles sobre el mapa. «Opciones» abre el panel y pausa la reproducción. Cerrar o Escape restablecen la vista anterior y conservan la ruta para revisarla; cambiar de día o seleccionar otra zona elimina el recorrido anterior. Volver desde Solo mapa también termina la demostración.
-
-El terreno se actualiza bajo demanda, con seguimiento limitado a diez actualizaciones por segundo. Las instrucciones solo se actualizan cuando cambian. Con movimiento reducido, el recorrido comienza pausado, sin reproducción automática; el avance manual y el recentrado continúan disponibles.
-
-La maqueta continúa sin calibración geográfica. El punto y las instrucciones pertenecen a una demostración del grafo conceptual; no se presentan como posición GPS ni guía física dentro del festival.
+La reconstrucción es conceptual y no oficial. No es un sistema de orientación física ni de emergencias. Los planos integrados (`planos/`) son los suministrados para cada día y no sustituyen al plano oficial del organizador.
