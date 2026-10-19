@@ -1,0 +1,13 @@
+{
+  "name": "node-miner-bridge",
+  "private": true,
+  "version": "0.1.0",
+  "description": "Cloudflare Workers secure draft WSS-to-Stratum relay for local iPhone RandomX mining",
+  "type": "module",
+  "scripts": {
+    "deploy": "wrangler deploy"
+  },
+  "devDependencies": {
+    "wrangler": "^4.0.0"
+  }
+}
