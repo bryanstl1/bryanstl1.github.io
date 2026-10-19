@@ -1,0 +1,82 @@
+<!doctype html><html lang="es"><head><meta charset="utf-8"/><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"/><meta name="theme-color" content="#090c0b"/><title>NODE MINER · Laboratorio Safari</title><style>
+:root{color-scheme:dark;background:#090c0b;color:#f1f6ed;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}*{box-sizing:border-box}body{margin:0}main{max-width:710px;margin:auto;padding:19px 17px 65px}header{display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid #2c382b;padding:5px 0 19px;font-size:14px;font-weight:900}header em{color:#c8ff68;font-style:normal}a{color:#c8ff68}header a{font-size:12px;font-weight:600;text-decoration:none}.eyebrow{color:#c8ff68;font-size:10px;font-weight:900;letter-spacing:2px;margin-top:34px}h1{letter-spacing:-1.6px;line-height:1.03;font-size:clamp(35px,8vw,52px);margin:13px 0}h1 em{color:#c8ff68;font-style:normal}p{color:#9eae9f;font-size:13px;line-height:1.65}.notice{border:1px solid #7b5e29;background:#2c2316;color:#f0d49c;padding:15px;border-radius:13px;font-size:12px;line-height:1.6;margin:22px 0}.chip{color:#c8ff68;border:1px solid #43623b;border-radius:7px;padding:8px 12px;font-size:10px;font-weight:900;letter-spacing:1px;display:inline-block}.grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:18px 0}.stat{border-radius:15px;border:1px solid #28382c;background:#111914;padding:18px}.stat:first-child{grid-column:1/-1;border-color:#527044;background:linear-gradient(120deg,#1b301f,#121915)}.label{font-size:10px;letter-spacing:1px;font-weight:900;color:#acc1ae}.value{font-size:32px;font-weight:900;letter-spacing:-1px;margin:15px 0 3px}.stat:first-child .value{font-size:47px;color:#c8ff68}.unit{font-size:11px;color:#829a87}.card{background:#111914;border:1px solid #28382c;border-radius:16px;padding:20px;margin:14px 0}.card h2{font-size:19px;letter-spacing:-.4px;margin:4px 0 10px}.btns{display:flex;gap:9px;margin-top:16px}button{flex:1;min-width:0;padding:15px 8px;border:0;border-radius:11px;background:#c8ff68;color:#122308;font-size:14px;font-weight:850}button.secondary{background:#263829;color:#d9f0d2;border:1px solid #446346}button:disabled{opacity:.35}select{width:100%;padding:11px;border:1px solid #42573e;border-radius:9px;background:#0a100c;color:white;font:inherit;margin:8px 0}.progress{height:8px;background:#2c392c;border-radius:8px;overflow:hidden;margin-top:16px}.progress>div{height:100%;width:0%;background:#c8ff68;transition:width .12s}#status{font-size:12px;color:#a9c1ab;margin-top:13px;min-height:20px}dl{margin:0}dl div{display:flex;justify-content:space-between;gap:12px;padding:13px 0;border-bottom:1px solid #27372a;font-size:12px}dl div:last-child{border:0}dt{color:#91a996}dd{margin:0;font-weight:800;text-align:right;max-width:67%}code{display:block;font-size:11px;color:#ccf3c0;word-break:break-all;padding:12px;border:1px solid #2e4030;background:#090f0b;border-radius:9px}footer{margin-top:30px;color:#839786;font-size:11px;line-height:1.6}@media(max-width:375px){.stat:first-child .value{font-size:39px}.value{font-size:27px}}
+</style></head><body><main><header><div>NODE <em>MINER</em> / LAB</div><a href="./">← Volver al panel</a></header>
+<div class="eyebrow">IPHONE · SAFARI · PROCESAMIENTO LOCAL</div><h1>Cálculo real.<br><em>Sin falsas ganancias.</em></h1>
+<p>Ejecuta operaciones criptográficas reales desde Safari, mide cuántas calcula por segundo y controla la duración. No requiere servidor, cuenta ni pago.</p>
+<div class="notice"><strong>No es minería RandomX ni genera XMR.</strong> El navegador calculará hashes SHA-256 auténticos con Web Crypto. No son comparables al hashrate de RandomX, no se envían a un pool y no producen recompensas.</div>
+<div class="chip" id="badge">● DETENIDO</div>
+<div class="grid">
+<div class="stat"><div class="label">RENDIMIENTO SHA-256 EN SAFARI</div><div class="value"><span id="hps">0</span> <span style="font-size:13px;color:#a9bea9">hashes/s</span></div><div class="unit">Resultado medido, no RandomX</div></div>
+<div class="stat"><div class="label">HASHES REALES</div><div class="value" id="total">0</div><div class="unit">Operaciones ejecutadas</div></div>
+<div class="stat"><div class="label">DURACIÓN</div><div class="value" id="elapsed">0.0</div><div class="unit">Segundos activos</div></div>
+</div>
+<section class="card"><h2>Prueba de CPU / Web Crypto</h2><p>Elige una prueba breve. Se detendrá automáticamente al concluir, al cambiar de pestaña o al pulsar Detener.</p>
+<label for="duration" style="font-size:12px">Duración máxima</label><select id="duration"><option value="3">3 segundos (recomendado)</option><option value="5">5 segundos</option><option value="10">10 segundos (máximo)</option></select>
+<div class="progress"><div id="bar"></div></div>
+<div class="btns"><button id="start">▶ Iniciar</button><button class="secondary" id="stop" disabled>■ Detener</button></div>
+<div id="status" aria-live="polite">Listo para empezar. No hay procesamiento activo.</div></section>
+<section class="card"><div class="label">VERIFICACIÓN LOCAL</div><h2>Último resultado criptográfico</h2><dl><div><dt>Algoritmo</dt><dd>SHA-256 · Web Crypto</dd></div><div><dt>Vector oficial de prueba «abc»</dt><dd id="check">Pendiente</dd></div><div><dt>Último nonce</dt><dd id="nonce">Ninguno</dd></div><div><dt>Hashes con prefijo 000</dt><dd id="hits">0 · Ejemplo PoW, no shares</dd></div></dl><p>Hash calculado:</p><code id="hash">Sin calcular</code></section>
+<section class="card"><div class="label">LIMITACIONES REALES</div><h2>¿Qué falta para minar Monero?</h2><dl><div><dt>RandomX, modo rápido</dt><dd>2080 MiB RAM</dd></div><div><dt>RandomX, modo ligero</dt><dd>256 MiB RAM</dd></div><div><dt>XMRig dentro de Safari</dt><dd>No compatible</dd></div><div><dt>Monero producido aquí</dt><dd>0 XMR</dd></div></dl><p>El proyecto RandomX advierte que la minería web no es viable por sus requisitos de memoria y operaciones aritméticas. Un motor remoto autorizado sigue siendo la ruta para minería real.</p><p><a href="./servicios.html">Ver alternativas remotas y costos →</a></p></section>
+<footer>Esta prueba solo se inicia con tu consentimiento. No envía datos ni guarda credenciales. La aceleración de Web Crypto puede afectar el resultado, por lo que es una medición del navegador, no un benchmark RandomX ni una medida exclusiva del CPU. Si notas calentamiento, detén la prueba.</footer>
+</main><script>
+"use strict";
+const $=id=>document.getElementById(id);
+const enc=new TextEncoder();
+const expected="ba7816bf8f01cfea414140de5dae2223b00361a396177a9cb410ff61f20015ad";
+const toHex=arr=>Array.from(new Uint8Array(arr),b=>b.toString(16).padStart(2,"0")).join("");
+let active=false,runId=0,startAt=0,limit=3000,count=0,hits=0,hash="",lastPaint=0;
+function update(t){
+ $("elapsed").textContent=(t/1000).toFixed(1);
+ $("total").textContent=count.toLocaleString("es-MX");
+ $("hps").textContent=t>0?Math.round(count/(t/1000)).toLocaleString("es-MX"):"0";
+ $("nonce").textContent=count?String(count-1):"Ninguno";
+ $("hits").textContent=hits+" · Ejemplo PoW, no shares";
+ $("hash").textContent=hash||"Sin calcular";
+ $("bar").style.width=Math.min(100,t/limit*100)+"%";
+}
+function stop(reason){
+ if(!active)return;
+ active=false;runId++;
+ const elapsed=Math.min(performance.now()-startAt,limit);
+ update(elapsed);
+ $("start").disabled=false;$("stop").disabled=true;$("duration").disabled=false;
+ $("badge").textContent="● PRUEBA TERMINADA";
+ $("status").textContent=reason;
+}
+async function check(){
+ try{
+  if(!window.isSecureContext||!crypto.subtle)throw new Error("Safari requiere HTTPS y Web Crypto");
+  const actual=toHex(await crypto.subtle.digest("SHA-256",enc.encode("abc")));
+  if(actual!==expected)throw new Error("Resultado SHA-256 no coincide");
+  $("check").textContent="Correcta ✓";$("check").style.color="#c8ff68";
+ }catch(e){
+  $("check").textContent="No disponible";$("status").textContent=e.message;
+  $("start").disabled=true;
+ }
+}
+$("start").addEventListener("click",async()=>{
+ if(active||$("check").textContent!=="Correcta ✓")return;
+ active=true;runId++;const id=runId;
+ count=0;hits=0;hash="";startAt=performance.now();lastPaint=0;
+ limit=Math.min(10000,Math.max(3000,Number($("duration").value)*1000));
+ $("start").disabled=true;$("stop").disabled=false;$("duration").disabled=true;
+ $("badge").textContent="● CALCULANDO SHA-256";$("status").textContent="Prueba en ejecución. Mantén Safari visible.";update(0);
+ try{
+  while(active&&id===runId&&performance.now()-startAt<limit){
+   if(document.hidden){stop("Detenida al salir de Safari.");return}
+   const result=await crypto.subtle.digest("SHA-256",enc.encode("NODE-MINER-SAFARI-LOCAL|"+count));
+   if(!active||id!==runId)return;
+   hash=toHex(result);if(hash.startsWith("000"))hits++;
+   count++;
+   let elapsed=performance.now()-startAt;
+   if(elapsed-lastPaint>=160){update(elapsed);lastPaint=elapsed}
+   if(count%20===0)await new Promise(resolve=>setTimeout(resolve,0));
+  }
+  if(active&&id===runId)stop("Prueba finalizada. Sin minería ni recompensas.");
+ }catch(e){if(active&&id===runId)stop("Error de procesamiento: "+e.message)}
+});
+$("stop").addEventListener("click",()=>stop("Detenida manualmente."));
+document.addEventListener("visibilitychange",()=>{if(document.hidden)stop("Detenida al cambiar de pestaña.")});
+window.addEventListener("pagehide",()=>stop("Detenida al salir."));
+check();
+</script></body></html>
