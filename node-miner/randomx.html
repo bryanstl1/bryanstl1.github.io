@@ -1,0 +1,57 @@
+<!doctype html>
+<html lang="es">
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"><meta name="theme-color" content="#090c0b"><meta name="apple-mobile-web-app-capable" content="yes">
+<title>NODE MINER · RandomX CPU iPhone</title>
+<style>
+:root{color-scheme:dark;--bg:#090c0b;--panel:#111815;--line:#293a2c;--lime:#c8ff68;--muted:#9aac9c}*{box-sizing:border-box}body{margin:0;background:var(--bg);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;color:#f2f8f0}main{max-width:750px;margin:auto;padding:18px 16px 85px}header{display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid var(--line);padding:9px 0 20px;font-size:13px;font-weight:900}header em{color:var(--lime);font-style:normal}header a{font-size:12px;font-weight:600;color:#cfdfc9;text-decoration:none}.eyebrow{font-size:10px;color:var(--lime);letter-spacing:2.1px;font-weight:900;margin:34px 0 12px}h1{font-size:clamp(34px,8vw,52px);line-height:1.05;letter-spacing:-2px;margin:0 0 12px}h1 em{font-style:normal;color:var(--lime)}p{font-size:13px;color:var(--muted);line-height:1.62}.alert{border:1px solid #84682e;background:#2b2317;border-radius:13px;color:#efd69e;font-size:12px;line-height:1.65;padding:16px;margin:20px 0}.alert strong{color:#ffe4ab}.tag{display:inline-flex;padding:8px 10px;color:var(--lime);border:1px solid #41613e;border-radius:8px;font-size:10px;font-weight:900;letter-spacing:.9px;margin:5px 0 14px}.stats{display:grid;grid-template-columns:1fr 1fr;gap:12px}.stat{background:var(--panel);border:1px solid var(--line);border-radius:15px;padding:19px;min-width:0}.stat:first-child{grid-column:1/-1;background:linear-gradient(140deg,#1a301d,#121914);border-color:#577847}.label{font-size:10px;color:#adc4aa;font-weight:900;letter-spacing:1px}.number{font-size:clamp(26px,7vw,35px);font-weight:900;letter-spacing:-1px;margin-top:15px}.stat:first-child .number{font-size:clamp(35px,10vw,50px);color:var(--lime)}.unit{color:#a0b4a1;font-size:12px;font-weight:500}.panel{background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:20px;margin-top:15px}h2{font-size:19px;letter-spacing:-.5px;margin:4px 0 12px}.controls{display:flex;gap:10px;margin:18px 0 10px}.controls button{flex:1;padding:15px 10px;font:inherit;font-size:13px;font-weight:850;border-radius:11px;border:none;min-width:0}button.primary{background:var(--lime);color:#14240e}button.secondary{background:#263829;color:#dbedd7;border:1px solid #466144}button:disabled{opacity:.42}label{display:block;color:#cbddc6;font-size:12px;margin:16px 0 7px}select{background:#09110b;border:1px solid #3d533d;border-radius:10px;color:#f1f9ec;font-size:15px;padding:14px;width:100%}.progress{height:8px;background:#2b3c2b;border-radius:10px;overflow:hidden;margin:17px 0}.progress>div{background:var(--lime);width:0;height:100%;transition:width .2s}.message{font-size:12px;color:#c4dcbc;line-height:1.55;margin-top:16px;min-height:20px}.data{display:flex;justify-content:space-between;gap:14px;border-bottom:1px solid #26382a;padding:14px 0;font-size:12px}.data:last-child{border:none}.data span{color:#9dae9d}.data strong{text-align:right;max-width:67%}.hash{font-size:11px;line-height:1.6;word-break:break-all;border-radius:9px;border:1px solid #29402a;background:#090f0a;color:#c6edb0;padding:12px}.muted{color:#8fa592;font-size:11px;line-height:1.55}a{color:var(--lime)}footer{color:#839987;font-size:11px;line-height:1.6;padding:23px 0}
+</style>
+</head><body><main>
+<header><strong>NODE <em>MINER</em> / RX LAB</strong><a href="./">← Panel principal</a></header>
+<div class="eyebrow">NODE LAB / RANDOMX · WEBASSEMBLY</div>
+<h1>Tu CPU.<br><em>RandomX real.</em></h1>
+<p>Experimento de verificación RandomX en el procesador de tu iPhone mediante Safari. Utiliza código WebAssembly y una caché ligera de 256 MiB, sin servidores de minería.</p>
+<div class="alert"><strong>Prueba local, no minería de Monero conectada.</strong> Calcularemos hashes RandomX válidos tras comprobar un vector de referencia, pero no enviaremos trabajo a un pool ni obtendremos recompensas. Safari puede cerrar la prueba por memoria o temperatura.</div>
+<div class="tag" id="status-pill">● INACTIVO · SIN CONSUMO DE PRUEBA</div>
+<div class="stats"><div class="stat"><div class="label">HASHRATE RANDOMX MEDIDO</div><div class="number"><span id="speed">0</span> <span class="unit">H/s</span></div><p class="muted">Un solo trabajador en modo ligero; no comparable con SHA-256</p></div><div class="stat"><div class="label">HASHES REALIZADOS</div><div class="number" id="count">0</div></div><div class="stat"><div class="label">TIEMPO DE CÁLCULO</div><div class="number"><span id="seconds">0.0</span> <span class="unit">s</span></div></div></div>
+<section class="panel"><h2>Prueba bajo tu control</h2><p>Safari inicializará la caché de RandomX, verificará un hash conocido y después ejecutará un benchmark breve. La inicialización podría llevar tiempo. Nunca se inicia automáticamente.</p>
+<label for="duration">Duración del benchmark, después de preparar memoria</label><select id="duration"><option value="3">3 segundos · primera prueba</option><option value="5">5 segundos</option><option value="10">10 segundos</option></select>
+<div class="progress"><div id="bar"></div></div><div class="controls"><button type="button" id="start" class="primary">▶ Iniciar RandomX</button><button type="button" id="stop" class="secondary" disabled>■ Detener</button></div>
+<div class="message" id="message" role="status">Listo. El CPU no está haciendo pruebas.</div><p class="muted">La memoria del motor se libera al detener o salir. La prueba se cancela automáticamente si la preparación excede 90 segundos.</p>
+</section>
+<section class="panel"><div class="label">VALIDACIÓN CRIPTOGRÁFICA</div><h2>RandomX verificable</h2>
+<div class="data"><span>Motor</span><strong>RandomX WASM, modo light</strong></div><div class="data"><span>Validación</span><strong id="verified">Pendiente</strong></div><div class="data"><span>Memoria de caché</span><strong>~256 MiB</strong></div><div class="data"><span>Último hash</span><strong id="hash-label">Sin resultados</strong></div><p id="hash" class="hash">Sin calcular</p><p class="muted">Vector canónico esperado: 8a48e5f9db45ab79d9080574c4d81954fe6ac63842214aff73c244b26330b7c9</p>
+</section>
+<section class="panel"><h2>Lo que aún falta para minar XMR</h2><p>Este laboratorio no transmite trabajos a la red Monero. Para minería con recompensa harían falta una wallet pública, un pool y una conexión de minería compatible con Safari. Además, el teléfono debe mantenerse activo, puede calentarse y los ingresos serían inciertos y probablemente insignificantes.</p><p><a href="./laboratorio.html">Comparar con el laboratorio SHA-256 →</a></p><p><a href="./servicios.html">Ver alternativas remotas →</a></p></section>
+<footer>Prototipo experimental; no invierte dinero ni solicita claves. Motor: proyecto RandomX-bonanza de aa022 y código RandomX. Licencias incluidas con los archivos del motor. Usar solo en tu propio dispositivo y voluntariamente. No hay minería en segundo plano.</footer>
+</main><script>
+'use strict';
+const el=id=>document.getElementById(id);let engine=null,watchdog=0,benchSeconds=0,verified=false;
+const fmt=n=>Number(n||0).toLocaleString('es-MX',{maximumFractionDigits:2});
+function show(s){el('message').textContent=s}
+function clearEngine(){if(watchdog){clearTimeout(watchdog);watchdog=0}if(engine){engine.terminate();engine=null}el('start').disabled=false;el('stop').disabled=true;el('duration').disabled=false}
+function stop(msg){clearEngine();el('status-pill').textContent='● INACTIVO';show(msg||'Detenido por el usuario; no se enviaron hashes a ningún pool.')}
+el('start').addEventListener('click',()=>{
+ if(engine)return;
+ verified=false;el('verified').textContent='Pendiente';el('speed').textContent='0';el('count').textContent='0';el('seconds').textContent='0.0';el('bar').style.width='0%';el('hash').textContent='Sin calcular';el('hash-label').textContent='Sin resultados';
+ if(!window.Worker||!window.WebAssembly){show('Safari no ofrece Worker o WebAssembly; no se puede ejecutar RandomX.');return}
+ benchSeconds=Number(el('duration').value)||3;
+ try{engine=new Worker('./rx-light-worker.js')}catch(err){show('No se pudo cargar el motor: '+err.message);return}
+ el('start').disabled=true;el('stop').disabled=false;el('duration').disabled=true;el('status-pill').textContent='● PREPARANDO RANDOMX';show('Iniciando worker, sin llamadas a pools…');
+ engine.onmessage=e=>{
+  const m=e.data||{};
+  if(m.type==='phase'){show(m.status||'Inicializando RandomX…');el('status-pill').textContent='● '+String(m.phase).toUpperCase()}
+  if(m.type==='verified'){verified=true;el('verified').textContent='Hash canónico correcto ✓';el('verified').style.color='#c8ff68';show(m.status);el('status-pill').textContent='● CALCULANDO RANDOMX'}
+  if(m.type==='progress'||m.type==='done'){
+    el('speed').textContent=fmt(m.hps);el('count').textContent=fmt(m.count);el('seconds').textContent=fmt(m.seconds);el('bar').style.width=(Math.min(100,Number(m.seconds)/benchSeconds*100))+'%';
+    el('hash').textContent=m.lastHash||'Sin calcular';el('hash-label').textContent='Verificado en memoria local';if(m.type==='done')stop(m.status);
+  }
+  if(m.type==='error'){el('verified').textContent=verified?'Verificado, fallo posterior':'No se pudo verificar';stop(m.status||'Fallo RandomX')}
+ };
+ engine.onerror=()=>stop('Safari reportó un error al ejecutar WebAssembly. La prueba no generó recompensas.');
+ watchdog=setTimeout(()=>{if(engine)stop('Se agotó el límite de inicialización (90 s). Prueba detenida para proteger el dispositivo.')},90000);
+ engine.postMessage({type:'start',seconds:benchSeconds});
+});
+el('stop').addEventListener('click',()=>stop('Prueba detenida manualmente.'));
+document.addEventListener('visibilitychange',()=>{if(document.hidden&&engine)stop('Detenido al cambiar de aplicación o pestaña.')});
+window.addEventListener('pagehide',()=>{if(engine)stop('Detenido al salir de Safari.')});
+</script></body></html>
