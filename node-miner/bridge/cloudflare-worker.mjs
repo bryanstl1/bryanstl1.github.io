@@ -17,7 +17,7 @@ export default {
   if (request.method === "GET" && url.pathname === "/health") {
    const allowOrigin = request.headers.get("Origin") === APP_ORIGIN ? APP_ORIGIN : "null";
    return Response.json(
-    { service: "node-miner-bridge", mining: false, bridgeTokenConfigured: configured, protocol: "wss-auth-v4", poolConnected: false },
+    { service: "node-miner-bridge", mining: false, bridgeTokenConfigured: configured, protocol: "wss-auth-v5", poolConnected: false },
     { headers: {"Access-Control-Allow-Origin": allowOrigin, "Cache-Control": "no-store", "Vary": "Origin"} }
    );
   }
@@ -84,25 +84,37 @@ export default {
     if(trial!==tcp)try{await trial?.close()}catch{}
    }
   }
+  async function diagnosticTLS(host,port,kind,deadline){
+   if(ended)return;
+   send("diagnostic_start",{host,port,kind});
+   let sock=null;
+   try{
+    sock=connect({hostname:host,port},{secureTransport:"on"});
+    await Promise.race([sock.opened,new Promise((_,rej)=>setTimeout(()=>rej(new Error("TLS diagnostic timeout")),deadline))]);
+    if(!ended)send("diagnostic_ok",{host,port,kind});
+   }catch(err){
+    const category=classify(err);
+    console.error("NODE MINER TLS diagnostic:",kind,host,port,category,String(err?.message||"").slice(0,200));
+    if(!ended)send("diagnostic_failed",{host,port,kind,category});
+   }finally{
+    try{await sock?.close()}catch{}
+   }
+  }
   async function connectPool(){
    if(ended||state!=="connecting")return;
    state="diagnosing";
-   // Official HashVault backup: hashvault.pro site lists pool.hashvault.sh.
-   // Do NOT send a wallet, login, any Stratum work or shares during tests.
+   // No Stratum login or wallet: this is a TLS connectivity test only.
+   // HashVault's own miner pins its mining-server certificate.
    for(const host of [POOL_HOST,"pool.hashvault.sh"]){
     if(ended)return;
-    send("probe_start",{host,mode:"on"});
-    if(await probe(host,"on",6500))return;
+    await diagnosticTLS(host,443,"hashvault",6500);
    }
-   for(const host of [POOL_HOST,"pool.hashvault.sh"]){
-    if(ended)return;
-    send("probe_start",{host,mode:"off"});
-    await probe(host,"off",5500);
-   }
+   if(!ended)await diagnosticTLS("www.google.com",443,"control",6500);
+   if(!ended)await diagnosticTLS("xmr-us-east1.nanopool.org",10343,"alternative_pool",7500);
    if(!ended){
     state="diagnosed";
     send("diagnostics_done");
-    setTimeout(()=>{void cleanup(1000,"Diagnostics finished")},900);
+    setTimeout(()=>{void cleanup(1000,"Diagnostics finished")},1100);
    }
   }
   async function readPool(){
