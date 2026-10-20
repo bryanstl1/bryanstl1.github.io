@@ -52,11 +52,11 @@ async function checkWorker(){
   const resp=await fetch("https://"+HOST+"/health",{cache:"no-store",mode:"cors"});
   if(!resp.ok)throw Error("HTTP "+resp.status);
   const data=await resp.json();
-  const v2=data.protocol==="wss-auth-v5";
+  const v2=data.protocol==="wss-auth-v6";
   const conf=data.bridgeTokenConfigured===true;
   $("bridgeHealth").className="status"+(conf&&v2?" good":" warn");
   $("bridgeHealth").textContent=
-   "Worker: "+(v2?"versión 5 instalada":"versión antigua o incorrecta")+
+   "Worker: "+(v2?"versión 6 instalada":"versión antigua o incorrecta")+
    ". BRIDGE_TOKEN: "+(conf?"configurado (32+ caracteres)":"NO configurado o demasiado corto")+
    ". Minería: apagada.";
   if(!v2||!conf){$("start").disabled=true;show("Primero corrige el Worker o BRIDGE_TOKEN en Cloudflare. No pruebes WSS todavía.","warn")}
@@ -111,7 +111,7 @@ $("start").addEventListener("click",()=>{
    stage="diagnosing";
    show("✓ Token correcto. Probando "+label(m.kind,m.host,m.port)+" por TLS…\n\n"+probeLog.join("\n"),"warn");
   }else if(m.type==="diagnostic_failed"){
-   probeLog.push("✕ "+label(m.kind,m.host,m.port)+": "+(translate[m.category]||"error desconocido"));
+   probeLog.push("✕ "+label(m.kind,m.host,m.port)+": "+(translate[m.category]||"error desconocido")+"\n  Detalle Cloudflare: "+(typeof m.reason==="string"?m.reason.slice(0,190):"no disponible"));
    show("✓ Autenticación correcta. Continuando diagnósticos…\n\n"+probeLog.join("\n"),"warn");
   }else if(m.type==="diagnostic_ok"){
    if(m.kind==="control")controlSuccess=true;
