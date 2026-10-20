@@ -5,7 +5,7 @@
 <h1>Verificar el puente.<br><em>Sin minar todavía.</em></h1>
 <p>Separaremos la prueba en tres etapas: comprobar el Worker, autenticar con tu token y verificar que pueda establecer un canal TCP/TLS con HashVault. No enviaremos dirección de Monero, login ni hashes.</p>
 <div class="alert"><b>Privacidad:</b> introduce solamente el valor de <b>BRIDGE_TOKEN</b> que guardaste en tu gestor de contraseñas. Se enviará cifrado mediante un mensaje WSS a tu Worker después de abrir la conexión. No aparecerá en la URL. No se guardará en GitHub, en la página ni en el almacenamiento del navegador. <b>No compartas capturas con el secreto visible.</b></div>
-<div class="card"><div class="chip">DIAGNÓSTICO MANUAL · HASTA 40 SEGUNDOS</div>
+<div class="card"><div class="chip">DIAGNÓSTICO TLS · HASTA 40 SEGUNDOS</div>
 <div id="bridgeHealth" class="status" role="status" aria-live="polite">Consultando el estado público del Worker…</div>
 <label for="token">Tu secreto BRIDGE_TOKEN</label><input id="token" type="password" placeholder="Pega el secreto guardado en Cloudflare" autocomplete="off" spellcheck="false" autocorrect="off" autocapitalize="off">
 <p class="caption">El campo queda oculto. No uses tu contraseña de GitHub ni las 16 palabras de tu wallet. Se necesita el valor exacto que creaste en Cloudflare.</p>
@@ -27,7 +27,7 @@
 "use strict";
 const $=id=>document.getElementById(id);
 const HOST="node-miner-bridge.bryan-stl270201.workers.dev";
-let socket=null,timeout=0,finished=false,stage="idle",probeLog=[];
+let socket=null,timeout=0,finished=false,stage="idle",probeLog=[],controlSuccess=false,poolSuccess=false;
 
 function show(msg,kind=""){
  $("result").className="status"+(kind?" "+kind:"");
@@ -52,11 +52,11 @@ async function checkWorker(){
   const resp=await fetch("https://"+HOST+"/health",{cache:"no-store",mode:"cors"});
   if(!resp.ok)throw Error("HTTP "+resp.status);
   const data=await resp.json();
-  const v2=data.protocol==="wss-auth-v4";
+  const v2=data.protocol==="wss-auth-v5";
   const conf=data.bridgeTokenConfigured===true;
   $("bridgeHealth").className="status"+(conf&&v2?" good":" warn");
   $("bridgeHealth").textContent=
-   "Worker: "+(v2?"versión 4 instalada":"versión antigua o incorrecta")+
+   "Worker: "+(v2?"versión 5 instalada":"versión antigua o incorrecta")+
    ". BRIDGE_TOKEN: "+(conf?"configurado (32+ caracteres)":"NO configurado o demasiado corto")+
    ". Minería: apagada.";
   if(!v2||!conf){$("start").disabled=true;show("Primero corrige el Worker o BRIDGE_TOKEN en Cloudflare. No pruebes WSS todavía.","warn")}
@@ -75,7 +75,7 @@ $("start").addEventListener("click",()=>{
  let ws;
  try{ws=new WebSocket("wss://"+HOST+"/ws")}
  catch(e){show("Safari no pudo crear el WebSocket: "+e.message,"warn");return}
- socket=ws;finished=false;stage="opening";probeLog=[];
+ socket=ws;finished=false;stage="opening";probeLog=[];controlSuccess=false;poolSuccess=false;
  $("start").disabled=true;$("stop").disabled=false;
  show("Etapa 1/3: abriendo WebSocket seguro con Cloudflare…");
  timeout=setTimeout(()=>{
@@ -93,50 +93,49 @@ $("start").addEventListener("click",()=>{
  ws.onmessage=event=>{
   if(finished)return;
   let m;try{m=JSON.parse(event.data)}catch{return}
+  const names={hashvault:"HashVault",control:"Control TLS de Google",alternative_pool:"Nanopool XMR"};
+  const label=(kind,host,port)=>((names[kind]||"Servidor")+" ("+host+":"+port+")");
+  const translate={
+   destination_blocked:"destino bloqueado",
+   dns_failed:"falló la resolución DNS",
+   connection_refused:"conexión rechazada",
+   timeout:"tiempo de espera agotado",
+   tls_or_handshake:"TLS/handshake rechazado",
+   unreachable:"servidor inaccesible",
+   connection_error:"falló la conexión (consulta registros)"
+  };
   if(m.type==="auth_ok"){
    stage="connecting";
-   show("✓ Token aceptado por Cloudflare. Etapa 3/3: conectando por TCP/TLS con HashVault…","good");
-  }else if(m.type==="pool_ready"){
-   stage="ready";
-   const name=m.host==="pool.hashvault.sh"?"respaldo pool.hashvault.sh":"principal pool.hashvault.pro";
-   clearClock();
-   timeout=setTimeout(()=>pass("✓ BRIDGE_TOKEN aceptado. ✓ TCP/TLS conectado al servidor "+name+". ¡Puente funcional! Sin wallet, sin shares ni minería activa."),2200);
-   show("✓ Canal cifrado disponible con "+name+". Terminando diagnóstico…","good");
-  }else if(m.type==="probe_start"){
-   stage="probing";
-   const host=m.host==="pool.hashvault.sh"?"respaldo .sh":"principal .pro";
-   const protocol=m.mode==="on"?"TLS":"TCP sin cifrar (solo diagnóstico)";
-   show("✓ Token correcto. Probando "+host+" mediante "+protocol+"…\n\n"+probeLog.join("\n"),"warn");
-  }else if(m.type==="probe_failed"){
-   const host=m.host==="pool.hashvault.sh"?"Respaldo .sh":"Principal .pro";
-   const protocol=m.mode==="on"?"TLS":"TCP";
-   const translation={
-    destination_blocked:"destino bloqueado por Cloudflare",
-    dns_failed:"resolución DNS fallida",
-    connection_refused:"conexión rechazada",
-    timeout:"tiempo de espera agotado",
-    tls_or_handshake:"error de TLS o handshake",
-    unreachable:"servidor inaccesible",
-    connection_error:"error de conexión (consultar Cloudflare)"
-   };
-   probeLog.push("✕ "+host+" / "+protocol+": "+(translation[m.category]||"error desconocido"));
-   show("✓ Token validado. Pruebas de conexión en curso…\n\n"+probeLog.join("\n"),"warn");
-  }else if(m.type==="probe_ok"){
-   const host=m.host==="pool.hashvault.sh"?"Respaldo .sh":"Principal .pro";
-   probeLog.push("✓ "+host+" / "+(m.mode==="on"?"TLS":"TCP sin cifrar")+": puerto accesible");
-   show("✓ Token correcto.\n\n"+probeLog.join("\n"),"good");
+   show("✓ Token validado. Comparando TLS de HashVault, conexión de control y pool alternativo…","good");
+  }else if(m.type==="diagnostic_start"){
+   stage="diagnosing";
+   show("✓ Token correcto. Probando "+label(m.kind,m.host,m.port)+" por TLS…\n\n"+probeLog.join("\n"),"warn");
+  }else if(m.type==="diagnostic_failed"){
+   probeLog.push("✕ "+label(m.kind,m.host,m.port)+": "+(translate[m.category]||"error desconocido"));
+   show("✓ Autenticación correcta. Continuando diagnósticos…\n\n"+probeLog.join("\n"),"warn");
+  }else if(m.type==="diagnostic_ok"){
+   if(m.kind==="control")controlSuccess=true;
+   if(m.kind==="alternative_pool")poolSuccess=true;
+   probeLog.push("✓ "+label(m.kind,m.host,m.port)+": TLS conectado");
+   show("✓ Autenticación correcta. Resultados parciales:\n\n"+probeLog.join("\n"),"good");
   }else if(m.type==="diagnostics_done"){
-   fail("✓ BRIDGE_TOKEN correcto. Ninguna conexión TLS completada.\n\n"+probeLog.join("\n")+"\n\nEl Worker permanece activo; no hay minería ni transmisión de datos privados.");
+   const conclusion=poolSuccess?
+    "Hay un pool alternativo con TLS accesible. No está integrado ni se enviaron trabajos.":
+    controlSuccess?
+    "Cloudflare logra abrir TLS hacia Google, pero ningún pool probado estableció TLS. HashVault probablemente requiere un tratamiento especial de su certificado.":
+    "Ni la conexión de control TLS terminó correctamente. Revisaremos las restricciones de Cloudflare.";
+   const report="✓ BRIDGE_TOKEN correcto.\n\n"+probeLog.join("\n")+"\n\n"+conclusion+"\n\nMinería: APAGADA · Shares: 0";
+   closeTest();
+   show(report,poolSuccess?"good":"warn");
   }else if(m.type==="auth_failed"){
-   fail("Cloudflare rechazó BRIDGE_TOKEN. El valor escrito no coincide con el secreto actualmente guardado. No lo compartas aquí.");
+   fail("Cloudflare rechazó BRIDGE_TOKEN. No compartas el secreto; verifica que sea el valor guardado.");
   }else if(m.type==="auth_timeout"){
-   fail("Cloudflare cerró la sesión por demora al autenticar.");
-
+   fail("Cloudflare cerró la conexión antes de recibir el token.");
   }
  };
  ws.onerror=()=>{
   if(finished)return;
-  if(stage==="opening")fail("No se abrió el WebSocket. Revisa el origen permitido y que Cloudflare haya publicado la versión 4.");
+  if(stage==="opening")fail("No se abrió el WebSocket. Revisa el origen permitido y que Cloudflare haya publicado la versión 5.");
   else fail("El WebSocket reportó un error en la etapa: "+stage+". Comprueba el estado del Worker.");
  };
  ws.onclose=event=>{
