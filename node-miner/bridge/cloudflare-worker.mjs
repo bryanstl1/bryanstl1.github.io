@@ -17,7 +17,7 @@ export default {
   if (request.method === "GET" && url.pathname === "/health") {
    const allowOrigin = request.headers.get("Origin") === APP_ORIGIN ? APP_ORIGIN : "null";
    return Response.json(
-    { service: "node-miner-bridge", mining: false, bridgeTokenConfigured: configured, protocol: "wss-auth-v5", poolConnected: false },
+    { service: "node-miner-bridge", mining: false, bridgeTokenConfigured: configured, protocol: "wss-auth-v6", poolConnected: false },
     { headers: {"Access-Control-Allow-Origin": allowOrigin, "Cache-Control": "no-store", "Vary": "Origin"} }
    );
   }
@@ -95,7 +95,13 @@ export default {
    }catch(err){
     const category=classify(err);
     console.error("NODE MINER TLS diagnostic:",kind,host,port,category,String(err?.message||"").slice(0,200));
-    if(!ended)send("diagnostic_failed",{host,port,kind,category});
+    // Only the authenticated user receives this sanitized network error.
+    // Redact the private secret even if a runtime ever echoes it unexpectedly.
+    let reason=String(err?.message||err?.name||"Error no especificado")
+      .split(env.BRIDGE_TOKEN).join("[SECRETO]")
+      .replace(/https?:\/\/[^\s]+/gi,"[URL]")
+      .replace(/[\r\n\t]/g," ").slice(0,190);
+    if(!ended)send("diagnostic_failed",{host,port,kind,category,reason});
    }finally{
     try{await sock?.close()}catch{}
    }
