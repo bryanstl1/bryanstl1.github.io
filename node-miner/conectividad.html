@@ -1,0 +1,71 @@
+<!doctype html><html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#090d0a"><meta name="referrer" content="no-referrer"><title>NODE MINER · Gestor de puentes WSS</title>
+<style>
+:root{color-scheme:dark;--bg:#080c09;--panel:#131a15;--line:#2e4330;--lime:#caff75;--text:#f0f6ed;--muted:#a6b6a6;--amber:#ffce8b}*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}main{max-width:760px;margin:auto;padding:20px 17px 90px}header{display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--line);padding:10px 0 18px;font-size:13px;font-weight:900}header b,.accent{color:var(--lime)}a{color:var(--lime)}header a{font-weight:600;font-size:12px;text-decoration:none;color:#cbdcc9}.eyebrow{font-size:11px;letter-spacing:2px;color:var(--lime);font-weight:850;margin:34px 0 12px}h1{font-size:clamp(32px,9vw,52px);letter-spacing:-1.8px;line-height:1.04;margin:0 0 14px}h1 em{font-style:normal;color:var(--lime)}h2{font-size:18px;letter-spacing:-.4px;margin:4px 0 12px}p{color:var(--muted);font-size:13px;line-height:1.65}.flag{border:1px solid #775e2e;background:#2c2316;border-radius:13px;padding:15px;margin:23px 0;font-size:12px;color:#eed09a;line-height:1.65}.panel{background:var(--panel);border:1px solid var(--line);border-radius:17px;padding:18px;margin:14px 0}.badge{display:inline-block;font-size:10px;color:var(--lime);border:1px solid #41643f;border-radius:6px;padding:8px 11px;font-weight:850;letter-spacing:1px;margin-bottom:12px}.row{display:flex;justify-content:space-between;gap:12px;padding:14px 0;border-bottom:1px solid #27372a;font-size:12px}.row:last-child{border:0}.row span{color:var(--muted)}.row strong{max-width:60%;text-align:right}label{display:block;color:#d7e7d4;font-weight:750;font-size:12px;margin:16px 0 8px}input,select{width:100%;background:#080e09;color:#f6fff3;border:1px solid #435b43;border-radius:11px;padding:14px;font-size:16px}input:focus,select:focus{outline:2px solid #caff75}.helper{font-size:11px;color:#9bac9c;line-height:1.55;margin:8px 0}.checkline{display:flex;align-items:flex-start;gap:10px;font-size:12px;line-height:1.5;color:#c4d8c4;margin:18px 0}.checkline input{width:20px;height:20px;flex:none;margin:0;accent-color:#caff75}.buttons{display:flex;gap:11px;margin:14px 0}.buttons button{flex:1}button{border:0;border-radius:10px;font:inherit;font-weight:850;font-size:13px;padding:15px;background:var(--lime);color:#17290d;cursor:pointer}button.alt{background:#223426;color:#e3f5dd;border:1px solid #3d583f}button:disabled{opacity:.4}.result{min-height:78px;border:1px solid #38553b;border-radius:11px;background:#0c140e;padding:16px;font-size:12px;line-height:1.6;color:#cfedc9;white-space:pre-wrap;overflow-wrap:anywhere}.result.warn{border-color:#8b6840;color:#ffd19a}.result.ok{border-color:#638b4f;color:#caff75}ul{padding-left:18px;font-size:12px;color:#c5d7c2;line-height:1.8}footer{font-size:11px;line-height:1.6;color:#879e8a;padding-top:22px}
+</style></head><body><main>
+<header><span>NODE <b>MINER</b> / CONECTIVIDAD</span><a href="./">← Panel principal</a></header>
+<div class="eyebrow">FASE 04 · ARQUITECTURA MODULAR</div>
+<h1>Listo para el<br><em>próximo puente.</em></h1>
+<p>Este módulo permite comprobar si un puente <strong>WebSocket seguro (WSS)</strong> está accesible desde Safari. No depende de un pool concreto, y no cambia el laboratorio RandomX que ya funciona en tu iPhone.</p>
+<div class="flag"><strong>Importante:</strong> aquí únicamente comprobamos que se abra una conexión WebSocket. Una respuesta positiva NO comprueba Stratum, autenticación, aceptación de shares ni pagos. La minería permanece apagada.</div>
+<section class="panel"><div class="badge">ESTADO ACTUAL</div><div class="row"><span>CPU / RandomX en Safari</span><strong>Probado localmente</strong></div><div class="row"><span>NODE MINER SAFE</span><strong>Wallet creada por el usuario</strong></div><div class="row"><span>HashVault vía Cloudflare</span><strong>No funcional para TLS del pool</strong></div><div class="row"><span>Puente WSS alternativo</span><strong>Aún no confirmado</strong></div><div class="row"><span>Minería y recompensas XMR</span><strong>Sin activar / sin verificar</strong></div></section>
+<section class="panel">
+<h2>Comprobar un puente autorizado</h2>
+<p>Cuando encontremos un servicio compatible o despliegues un puente propio en un proveedor que permita este uso, pega aquí su URL pública <code>wss://</code> para verificar la conexión inicial.</p>
+<label for="bridge">Dirección WSS del puente</label><input type="url" id="bridge" placeholder="wss://tu-puente-autorizado.example/ws" autocomplete="off" autocapitalize="off" spellcheck="false" inputmode="url">
+<p class="helper">No escribas tokens, claves, direcciones de wallet ni contraseñas en esta URL. No aceptamos consultas (?), fragmentos (#) ni usuario:contraseña@.</p>
+<label for="provider">Tipo de servicio</label><select id="provider"><option value="own">Puente propio o administrado por mí</option><option value="trusted">Proveedor externo con condiciones verificadas</option></select>
+<label class="checkline"><input id="consent" type="checkbox"><span>Confirmo que estoy autorizado a probar esta dirección WSS, que conozco quién la administra y que no he incluido datos privados.</span></label>
+<div class="buttons"><button id="start" type="button">▶ Probar WSS</button><button id="stop" class="alt" type="button" disabled>■ Detener</button></div>
+<div class="result" id="status" role="status" aria-live="polite">En espera. No se ha abierto ninguna conexión.</div>
+<p class="helper">La prueba dura como máximo 8 segundos y no envía mensajes al servidor. El navegador puede transmitir la información normal de una conexión, incluido el origen de esta página y la dirección IP. Safari detendrá la prueba al cambiar de pestaña.</p>
+</section>
+<section class="panel"><h2>Requisitos para conectar minería real</h2><ul>
+<li>El propietario del servicio debe <strong>autorizar explícitamente</strong> este uso y el puente debe utilizar WSS cifrado.</li>
+<li>El puente debe soportar <strong>Stratum de Monero / RandomX</strong>, no solo aceptar conexiones WebSocket.</li>
+<li>La autenticación, el pool y sus mínimos de pago deben estar documentados. Ninguna clave privada de Monero es necesaria.</li>
+<li>Debemos implementar y comprobar la recepción de trabajos, el cálculo de nonces RandomX y la confirmación de <em>shares aceptadas</em>.</li>
+<li>Las recompensas a 4.67 H/s probablemente serían diminutas; una conexión satisfactoria no garantiza rentabilidad.</li>
+</ul>
+<div class="buttons"><button type="button" class="alt" id="copy">Copiar requisitos técnicos</button></div></section>
+<p><a href="./randomx.html">⛏ Volver a RandomX en tu iPhone →</a></p>
+<p><a href="./prueba-puente.html?v=6">Ver el diagnóstico anterior de Cloudflare →</a></p>
+<footer>NODE MINER · Este panel no guarda URLs ni credenciales en el dispositivo o en GitHub. Solo envía una solicitud WSS cuando pulsas Probar. El motor de minería nunca se inicia desde esta pantalla.</footer>
+</main><script>
+"use strict";
+const el=id=>document.getElementById(id);
+let socket=null,timer=null,closed=false;
+const requirements="NODE MINER: necesito un puente WebSocket seguro (wss://) que permita, de forma autorizada, Stratum JSON-RPC de Monero/RandomX sobre un pool documentado. El puente debe proporcionar URL WSS, protocolo de autenticación, destinos permitidos, TLS válido, límites/condiciones, costos, política de uso y posibilidad de comprobar shares aceptadas. El cálculo RandomX sucede en el CPU de mi iPhone, no en el servidor del puente.";
+function status(message,kind=""){el("status").className="result"+(kind?" "+kind:"");el("status").textContent=message}
+function reset(){if(timer){clearTimeout(timer);timer=null}el("start").disabled=false;el("stop").disabled=true}
+function close(msg,kind=""){closed=true;const ws=socket;socket=null;if(ws){try{ws.close(1000,"Diagnostic complete")}catch{}}reset();if(msg)status(msg,kind)}
+function validEndpoint(value){
+ if(value.length>500)return "La dirección es demasiado larga.";
+ let url;try{url=new URL(value)}catch{return "Escribe una URL WSS válida."}
+ if(url.protocol!=="wss:")return "El puente debe usar wss://, no ws:// ni https://.";
+ if(!url.hostname||url.username||url.password||url.search||url.hash)return "La URL contiene credenciales, parámetros o fragmentos. Usa una dirección WSS limpia.";
+ if(url.port&&(!/^\d+$/.test(url.port)||Number(url.port)<1||Number(url.port)>65535))return "Puerto no válido.";
+ if(url.hostname==="localhost"||url.hostname==="127.0.0.1"||url.hostname==="[::1]")return "No se puede probar un servidor local desde esta página.";
+ if(url.hostname.endsWith(".local"))return "Utiliza un dominio público autorizado.";
+ return null;
+}
+el("start").addEventListener("click",()=>{
+ if(socket)return;
+ if(!el("consent").checked){status("Confirma primero que estás autorizado a probar el servidor.","warn");return}
+ const raw=el("bridge").value.trim();
+ const error=validEndpoint(raw);
+ if(error){status(error,"warn");return}
+ let ws;
+ try{ws=new WebSocket(raw)}catch(e){status("Safari no pudo iniciar la conexión WSS: "+String(e.message||e),"warn");return}
+ socket=ws;closed=false;el("start").disabled=true;el("stop").disabled=false;
+ status("Conectando de forma pasiva. No se enviarán claves ni mensajes Stratum…");
+ let opened=false;
+ timer=setTimeout(()=>{if(!closed)close(opened?"✓ WSS abierto. No se verificó Stratum ni minería.":"Tiempo de espera agotado. El puente no respondió en 8 segundos.",opened?"ok":"warn")},8000);
+ ws.onopen=()=>{if(closed)return;opened=true;status("✓ Conexión WSS establecida. Probando estabilidad unos segundos, sin enviar datos de minería.","ok");};
+ ws.onerror=()=>{if(!closed)close("No se pudo establecer la conexión WSS. Puede ser un error de TLS, de origen permitido, de autorización, de red o del servidor.","warn")};
+ ws.onclose=e=>{if(closed)return;close(opened?"WSS se abrió pero el servidor cerró la conexión (código "+e.code+"). No demuestra compatibilidad con Stratum.":"El servidor rechazó o cerró la conexión antes de abrir WSS (código "+e.code+").","warn")};
+});
+el("stop").addEventListener("click",()=>close("Prueba detenida. No se envió ningún mensaje de minería."));
+document.addEventListener("visibilitychange",()=>{if(document.hidden&&socket)close("Prueba detenida al cambiar de pestaña.")});
+window.addEventListener("pagehide",()=>{if(socket)close()});
+el("copy").addEventListener("click",async()=>{try{await navigator.clipboard.writeText(requirements);status("Requisitos técnicos copiados. Puedes enviarlos a un proveedor para confirmar compatibilidad.","ok")}catch{status(requirements)}});
+</script></body></html>
